@@ -8,17 +8,17 @@ from utils import DEFAULT_PALETTE, HEADER_FORMAT
 class WAD_file:
     def __init__(self, wad_path: str = None):
         if not os.path.isfile(wad_path):
-            raise ValueError("There is no file")
+            raise ValueError(f"No file detected at {wad_path}")
 
         if self.is_wad(wad_path):
-            logger.info("It's a WAD!")
+            logger.info(f"{self.wad_type} found at {wad_path}")
             self.wad = open(wad_path, "rb")
         else:
-            logger.error("Not a WAD")
-            raise TypeError("This file is not a WAD file!")
+            raise TypeError(f"{wad_path} is not a WAD file.")
 
         self.lumps = self._get_lumps()
         self.lump_names = [lump[0] for lump in self.lumps]
+        self.palette = self._get_palette()
 
     def is_wad(self, path):
         with open(path, "rb") as opened_file:
@@ -58,26 +58,27 @@ class WAD_file:
         return lumps
 
     def get_lump_data(self, lump_name: str):
-        for name, offset, size in self.lumps:
-            if name == lump_name:
-                self.wad.seek(offset)
-                return self.wad.read(size)
-            else:
-                raise ValueError(f"Unknown lump: {lump_name}.")
+        if lump_name not in self.lump_names:
+            raise ValueError(f"Unknown lump: {lump_name}.")
+        else:
+            lump_id = self.lump_names.index(lump_name)
+            _, offset, size = self.lumps[lump_id]
+            self.wad.seek(offset)
+            return self.wad.read(size)
 
     def _get_palette(self):
         if "PLAYPAL" not in self.lump_names:
-            logger.info("No palette in this WAD file, loading the default one.")
-            pal = DEFAULT_PALETTE
+            logger.info(f"No palette in this {self.wad_type}, loading the default one.")
+            pal_b = DEFAULT_PALETTE
         else:
+            pal_b = self.get_lump_data("PLAYPAL")
 
-            pal_int = [x for x in self.get_lump_data("PLAYPAL")]
-            pal_int = [x for x in DEFAULT_PALETTE]
-            pal_iter = iter(pal_int)
-
-            pal = list(zip(pal_iter, pal_iter, pal_iter))[:256]
-
-        self.palette = pal
+        # 14 Palettes are packed all together by [R, G, B, R...] values.
+        # Making a list of tuples [(R, G, B), ...] and taking only the first one (256 colors).
+        pal_iter = iter(pal_b)
+        pal = list(zip(pal_iter, pal_iter, pal_iter))[:256]
+        logger.info("Palette extracted.")
+        return pal
 
 
 def main():
