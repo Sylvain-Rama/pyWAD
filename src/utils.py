@@ -2,8 +2,8 @@ import re
 
 HEADER_FORMAT = "<4sII"
 
-DOOM1_MAP_NAME_REGEX = re.compile(r"^E(?P<episode>[0-9])M(?P<number>[0-9])$")
-DOOM2_MAP_NAME_REGEX = re.compile(r"^MAP(?P<number>[0-9]{2})$")
+EXMY_REGEX = re.compile(r"^E(?P<episode>[0-9])M(?P<number>[0-9])$")
+MAPXY_REGEX = re.compile(r"^MAP(?P<number>[0-9]{2})$")
 
 DEFAULT_PALETTE = b"\
 \x00\x00\x00\x1f\x17\x0b\x17\x0f\x07\x4b\x4b\x4b\xff\xff\xff\x1b\
