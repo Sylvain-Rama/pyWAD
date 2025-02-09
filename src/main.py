@@ -1,8 +1,9 @@
 import os
 import struct
 from loguru import logger
+import re
 
-from utils import DEFAULT_PALETTE, HEADER_FORMAT
+from utils import DEFAULT_PALETTE, HEADER_FORMAT, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
 class WAD_file:
@@ -19,6 +20,7 @@ class WAD_file:
         self.lumps = self._get_lumps()
         self.lump_names = [lump[0] for lump in self.lumps]
         self.palette = self._get_palette()
+        self.maps = self._parse_levels()
 
     def is_wad(self, path):
         with open(path, "rb") as opened_file:
@@ -57,7 +59,7 @@ class WAD_file:
 
         return lumps
 
-    def get_lump_data(self, lump_name: str):
+    def read_lump_data(self, lump_name: str):
         if lump_name not in self.lump_names:
             raise ValueError(f"Unknown lump: {lump_name}.")
         else:
@@ -66,12 +68,12 @@ class WAD_file:
             self.wad.seek(offset)
             return self.wad.read(size)
 
-    def _get_palette(self):
+    def _get_palette(self) -> list:
         if "PLAYPAL" not in self.lump_names:
             logger.info(f"No palette in this {self.wad_type}, loading the default one.")
             pal_b = DEFAULT_PALETTE
         else:
-            pal_b = self.get_lump_data("PLAYPAL")
+            pal_b = self.read_lump_data("PLAYPAL")
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # Making a list of tuples [(R, G, B), ...] and taking only the first one (256 colors).
@@ -80,9 +82,46 @@ class WAD_file:
         logger.info("Palette extracted.")
         return pal
 
+    def _parse_levels(self) -> dict:
+        maps_idx = [
+            i for i, item in enumerate(self.lump_names) if re.search(EXMY_REGEX, item)
+        ]
+        if not maps_idx:
+            maps_idx = [
+                i
+                for i, item in enumerate(self.lump_names)
+                if re.search(MAPXY_REGEX, item)
+            ]
+            if not maps_idx:
+                logger.info("No levels available in this WAD.")
+                return None
+
+        map_dict = {}
+        for map_id in maps_idx:
+            lump_subset = self.lumps[map_id + 1 : map_id + len(MAPS_ATTRS) + 1]
+            name_subset = self.lump_names[map_id + 1 : map_id + len(MAPS_ATTRS) + 1]
+
+            map_name = self.lump_names[map_id]
+            map_dict[map_name] = {}
+
+            for map_attr in MAPS_ATTRS:
+                if map_attr not in name_subset:
+                    print(f"{map_name} does not have {map_attr}")
+
+                else:
+                    lump_id = name_subset.index(map_attr)
+                    lump_dict = {
+                        k: v
+                        for k, v in zip(["offset", "size"], lump_subset[lump_id][1:])
+                    }
+                    map_dict[map_name][map_attr] = lump_dict
+
+        logger.info(f"{len(maps_idx)} levels were found in this WAD.")
+        return map_dict
+
 
 def main():
-    WAD_file("WADs/DOOM.WAD")
+    WAD_file("WADs/DOOM2.WAD")
 
 
 if __name__ == "__main__":
