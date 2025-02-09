@@ -25,14 +25,13 @@ class WAD_file:
     def is_wad(self, path):
         with open(path, "rb") as opened_file:
 
-            magic, dir_size, dir_offset = struct.unpack(
-                HEADER_FORMAT, opened_file.read(struct.calcsize(HEADER_FORMAT))
-            )
-            if magic.decode("ascii") in ["IWAD", "PWAD"]:
+            name, dir_size, dir_offset = struct.unpack(HEADER_FORMAT, opened_file.read(struct.calcsize(HEADER_FORMAT)))
+            name = name.decode("ascii")
+            if name in ["IWAD", "PWAD"]:
                 self.dir_size = dir_size
                 self.dir_offset = dir_offset
                 self.wad_path = path
-                self.wad_type = magic.decode("ascii")
+                self.wad_type = name
 
                 return True
 
@@ -83,15 +82,10 @@ class WAD_file:
         return pal
 
     def _parse_levels(self) -> dict:
-        maps_idx = [
-            i for i, item in enumerate(self.lump_names) if re.search(EXMY_REGEX, item)
-        ]
+        # retrieving maps lumps in DOOM1 or DOOM2 formats
+        maps_idx = [i for i, item in enumerate(self.lump_names) if re.search(EXMY_REGEX, item)]
         if not maps_idx:
-            maps_idx = [
-                i
-                for i, item in enumerate(self.lump_names)
-                if re.search(MAPXY_REGEX, item)
-            ]
+            maps_idx = [i for i, item in enumerate(self.lump_names) if re.search(MAPXY_REGEX, item)]
             if not maps_idx:
                 logger.info("No levels available in this WAD.")
                 return None
@@ -110,10 +104,7 @@ class WAD_file:
 
                 else:
                     lump_id = name_subset.index(map_attr)
-                    lump_dict = {
-                        k: v
-                        for k, v in zip(["offset", "size"], lump_subset[lump_id][1:])
-                    }
+                    lump_dict = {k: v for k, v in zip(["offset", "size"], lump_subset[lump_id][1:])}
                     map_dict[map_name][map_attr] = lump_dict
 
         logger.info(f"{len(maps_idx)} levels were found in this WAD.")
