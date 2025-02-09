@@ -21,8 +21,10 @@ class WAD_file:
         self.lump_names = [lump[0] for lump in self.lumps]
         self.palette = self._get_palette()
         self.maps = self._parse_levels()
+        self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
+        self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
 
-    def is_wad(self, path):
+    def is_wad(self, path: str) -> bool:
         with open(path, "rb") as opened_file:
 
             name, dir_size, dir_offset = struct.unpack(HEADER_FORMAT, opened_file.read(struct.calcsize(HEADER_FORMAT)))
@@ -37,7 +39,7 @@ class WAD_file:
 
             return False
 
-    def _get_lumps(self):
+    def _get_lumps(self) -> list[tuple[str, int, int]]:
 
         self.wad.seek(4)
 
@@ -87,7 +89,7 @@ class WAD_file:
         if not maps_idx:
             maps_idx = [i for i, item in enumerate(self.lump_names) if re.search(MAPXY_REGEX, item)]
             if not maps_idx:
-                logger.info("No levels available in this WAD.")
+                logger.info("No levels found in this WAD.")
                 return None
 
         map_dict = {}
@@ -100,15 +102,43 @@ class WAD_file:
 
             for map_attr in MAPS_ATTRS:
                 if map_attr not in name_subset:
-                    print(f"{map_name} does not have {map_attr}")
+                    logger.warning(f"{map_name} does not have {map_attr} lump.")
 
                 else:
                     lump_id = name_subset.index(map_attr)
                     lump_dict = {k: v for k, v in zip(["offset", "size"], lump_subset[lump_id][1:])}
                     map_dict[map_name][map_attr] = lump_dict
 
-        logger.info(f"{len(maps_idx)} levels were found in this WAD.")
+        logger.info(f"{len(maps_idx)} levels found in this WAD.")
         return map_dict
+
+    def _parse_by_markers(self, sequence_name: str = "FLATS", m_start: str = "F_START", m_end: str = "F_END"):
+
+        if (m_start in self.lump_names) & (m_end in self.lump_names):
+            start_idx = self.lump_names.index(m_start)
+            end_idx = self.lump_names.index(m_end)
+
+        else:
+            logger.info(f"No {sequence_name} found in this WAD.")
+            return None
+
+        if end_idx < start_idx:
+            start_idx, end_idx = end_idx, start_idx
+
+        sel_lumps = self.lumps[start_idx : end_idx + 1]
+
+        res_dict = {}
+        for name, offset, size in sel_lumps:
+            # Some lumps are folder markers, with a size of 0. Ignoring them as they don't have any image data.
+            if size > 0:
+                # But because of this folder structure, in theory 2 different lumps could have the same name.
+                # Adding a warning just in case.
+                if name in res_dict.keys():
+                    logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
+                res_dict[name] = {"offset": offset, "size": size}
+
+        logger.info(f"{len(res_dict.keys())} {sequence_name} found in this WAD.")
+        return res_dict
 
 
 def main():
