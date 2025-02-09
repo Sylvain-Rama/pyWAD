@@ -5,6 +5,19 @@ HEADER_FORMAT = "<4sII"
 EXMY_REGEX = re.compile(r"^E(?P<episode>[0-9])M(?P<number>[0-9])$")
 MAPXY_REGEX = re.compile(r"^MAP(?P<number>[0-9]{2})$")
 
+MAPS_ATTRS = [
+    "THINGS",
+    "LINEDEFS",
+    "SIDEDEFS",
+    "VERTEXES",
+    "SEGS",
+    "SSECTORS",
+    "NODES",
+    "SECTORS",
+    "REJECT",
+    "BLOCKMAP",
+]
+
 DEFAULT_PALETTE = b"\
 \x00\x00\x00\x1f\x17\x0b\x17\x0f\x07\x4b\x4b\x4b\xff\xff\xff\x1b\
 \x1b\x1b\x13\x13\x13\x0b\x0b\x0b\x07\x07\x07\x2f\x37\x1f\x23\x2b\
