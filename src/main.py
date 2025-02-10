@@ -2,6 +2,7 @@ import os
 import struct
 from loguru import logger
 import re
+import numpy as np
 
 from utils import DEFAULT_PALETTE, HEADER_FORMAT, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
@@ -78,8 +79,9 @@ class WAD_file:
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # Making a list of tuples [(R, G, B), ...] and taking only the first one (256 colors).
-        pal_iter = iter(pal_b)
-        pal = list(zip(pal_iter, pal_iter, pal_iter))  # [:256]
+        # pal_iter = iter(pal_b)
+        # pal = list(zip(pal_iter, pal_iter, pal_iter))  # [:256]
+        pal = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3)) / 255.0
         logger.info("Palette extracted.")
         return pal
 
