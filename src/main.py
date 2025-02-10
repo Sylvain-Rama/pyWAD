@@ -78,10 +78,8 @@ class WAD_file:
             pal_b = self.read_lump_data("PLAYPAL")[:768]
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
-        # Making a list of tuples [(R, G, B), ...] and taking only the first one (256 colors).
-        # pal_iter = iter(pal_b)
-        # pal = list(zip(pal_iter, pal_iter, pal_iter))  # [:256]
-        pal = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3)) / 255.0
+        # The first one is thus 768 bytes long.
+        pal = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3))
         logger.info("Palette extracted.")
         return pal
 
