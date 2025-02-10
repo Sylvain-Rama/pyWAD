@@ -74,12 +74,12 @@ class WAD_file:
             logger.info(f"No palette in this {self.wad_type}, loading the default one.")
             pal_b = DEFAULT_PALETTE
         else:
-            pal_b = self.read_lump_data("PLAYPAL")
+            pal_b = self.read_lump_data("PLAYPAL")[:768]
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # Making a list of tuples [(R, G, B), ...] and taking only the first one (256 colors).
         pal_iter = iter(pal_b)
-        pal = list(zip(pal_iter, pal_iter, pal_iter))[:256]
+        pal = list(zip(pal_iter, pal_iter, pal_iter))  # [:256]
         logger.info("Palette extracted.")
         return pal
 
