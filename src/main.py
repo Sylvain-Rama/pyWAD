@@ -106,8 +106,7 @@ class WAD_file:
 
                 else:
                     lump_id = name_subset.index(map_attr)
-                    lump_dict = {k: v for k, v in zip(["offset", "size"], lump_subset[lump_id][1:])}
-                    map_dict[map_name][map_attr] = lump_dict
+                    map_dict[map_name][map_attr] = lump_subset[lump_id][1:]
 
         logger.info(f"{len(maps_idx)} levels found in this WAD.")
         return map_dict
@@ -135,10 +134,22 @@ class WAD_file:
                 # Adding a warning just in case.
                 if name in res_dict.keys():
                     logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
-                res_dict[name] = {"offset": offset, "size": size}
+                res_dict[name] = (offset, size)
 
         logger.info(f"{len(res_dict.keys())} {sequence_name} found in this WAD.")
         return res_dict
+
+    def open_flat(self, offset, size):
+        if size != 4096:
+            raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
+
+        self.wad.seek(offset)
+        flat = self.wad.read(size)
+
+        indices = np.array(struct.unpack("4096B", flat), dtype=np.uint8).reshape((64, 64))  # 8-bit index array
+        rgb_image = self.palette[indices]
+
+        return rgb_image
 
 
 def main():
