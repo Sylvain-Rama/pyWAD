@@ -139,7 +139,7 @@ class WAD_file:
         logger.info(f"{len(res_dict.keys())} {sequence_name} found in this WAD.")
         return res_dict
 
-    def open_flat(self, offset, size):
+    def draw_flat(self, offset, size):
         if size != 4096:
             raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
 
@@ -150,6 +150,38 @@ class WAD_file:
         rgb_image = self.palette[indices]
 
         return rgb_image
+
+    def draw_patch(self, offset, size):
+        self.wad.seek(offset)
+
+        width, height, left_offset, top_offset = struct.unpack("<4H", self.wad.read(8))
+        column_offsets = [struct.unpack("<I", self.wad.read(4))[0] for _ in range(width)]
+
+        image_data = np.zeros((width, height), dtype=np.uint8)
+
+        for x in range(width):
+
+            inner_offset = column_offsets[x] + offset
+
+            self.wad.seek(inner_offset)  # Move to column start
+            while True:
+
+                row_start = struct.unpack("<B", self.wad.read(1))[0]  # Read row start
+
+                if row_start == 0xFF:
+                    break  # End of column
+
+                pixel_count = ord(self.wad.read(1))
+                _ = self.wad.read(1)  # Skip unused byte
+
+                pixels = list(self.wad.read(pixel_count))
+                _ = self.wad.read(1)  # Skip column termination byte
+
+                image_data[x, row_start : row_start + pixel_count] = pixels
+
+        rgb_img = self.palette[image_data.T]
+
+        return rgb_img
 
 
 def main():
