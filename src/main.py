@@ -79,9 +79,11 @@ class WAD_file:
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # The first one is thus 768 bytes long.
-        pal = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3))
+        pal_rgb = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3))
+        pal_rgba = np.hstack((pal_rgb, np.ones((256, 1)) * 255))
+
         logger.info("Palette extracted.")
-        return pal
+        return pal_rgba
 
     def _parse_levels(self) -> dict:
         # retrieving maps lumps in DOOM1 or DOOM2 formats
@@ -161,7 +163,9 @@ class WAD_file:
         width, height, _, _ = struct.unpack("<2H2h", self.wad.read(8))
 
         column_offsets = [struct.unpack("<I", self.wad.read(4))[0] for _ in range(width)]
+
         image_data = np.zeros((width, height), dtype=np.uint8)
+        image_alpha = np.zeros((width, height), dtype=np.uint8)
 
         for i in range(width):
 
@@ -180,10 +184,14 @@ class WAD_file:
                 _ = self.wad.read(1)  # Skip column termination byte
 
                 image_data[i, row_start : row_start + pixel_count] = pixels
+                image_alpha[i, row_start : row_start + pixel_count] = 1
 
+        image_alpha = image_alpha.T
+        image_alpha = image_alpha[:, :, np.newaxis] * np.ones((1, 1, 4))
         rgb_img = self.palette[image_data.T]
+        rgba_img = rgb_img * image_alpha
 
-        return rgb_img
+        return rgba_img
 
 
 def main():
