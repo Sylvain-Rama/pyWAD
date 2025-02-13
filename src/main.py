@@ -154,20 +154,22 @@ class WAD_file:
     def draw_patch(self, offset, size):
         self.wad.seek(offset)
 
-        width, height, left_offset, top_offset = struct.unpack("<4H", self.wad.read(8))
-        column_offsets = [struct.unpack("<I", self.wad.read(4))[0] for _ in range(width)]
+        # See https://doomwiki.org/wiki/Picture_format for documentation
 
+        # Ignoring left and top offset for sprites, as they are mainly to set the 'height' of monsters
+        # or the place of hud elements
+        width, height, _, _ = struct.unpack("<2H2h", self.wad.read(8))
+
+        column_offsets = [struct.unpack("<I", self.wad.read(4))[0] for _ in range(width)]
         image_data = np.zeros((width, height), dtype=np.uint8)
 
-        for x in range(width):
+        for i in range(width):
 
-            inner_offset = column_offsets[x] + offset
-
+            inner_offset = column_offsets[i] + offset
             self.wad.seek(inner_offset)  # Move to column start
+
             while True:
-
                 row_start = struct.unpack("<B", self.wad.read(1))[0]  # Read row start
-
                 if row_start == 0xFF:
                     break  # End of column
 
@@ -177,7 +179,7 @@ class WAD_file:
                 pixels = list(self.wad.read(pixel_count))
                 _ = self.wad.read(1)  # Skip column termination byte
 
-                image_data[x, row_start : row_start + pixel_count] = pixels
+                image_data[i, row_start : row_start + pixel_count] = pixels
 
         rgb_img = self.palette[image_data.T]
 
