@@ -8,7 +8,10 @@ from utils import DEFAULT_PALETTE, HEADER_FORMAT, EXMY_REGEX, MAPXY_REGEX, MAPS_
 
 
 class WAD_file:
-    def __init__(self, wad_path: str = None):
+    def __init__(self, wad_path: str):
+        """This class is used to parse a WAD file and extract its lumps.
+        It also provides methods to parse the levels and extract the flats and sprites."""
+
         if not os.path.isfile(wad_path):
             raise ValueError(f"No file detected at {wad_path}")
 
@@ -26,6 +29,7 @@ class WAD_file:
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
 
     def is_wad(self, path: str) -> bool:
+        """Check if the file is a WAD file."""
         with open(path, "rb") as opened_file:
 
             name, dir_size, dir_offset = struct.unpack(HEADER_FORMAT, opened_file.read(struct.calcsize(HEADER_FORMAT)))
@@ -41,10 +45,10 @@ class WAD_file:
             return False
 
     def _get_lumps(self) -> list[tuple[str, int, int]]:
-
-        self.wad.seek(4)
+        """Get the list of lumps in the WAD file."""
 
         # Read number of lumps and directory offset
+        self.wad.seek(4)
         data = self.wad.read(8)
         num_lumps, dir_offset = struct.unpack("<ii", data)
 
@@ -70,7 +74,7 @@ class WAD_file:
             self.wad.seek(offset)
             return self.wad.read(size)
 
-    def _get_palette(self) -> list:
+    def _get_palette(self) -> np.ndarray:
         if "PLAYPAL" not in self.lump_names:
             logger.info(f"No palette in this {self.wad_type}, loading the default one.")
             pal_b = DEFAULT_PALETTE
@@ -158,9 +162,9 @@ class WAD_file:
         return rgb_image
 
     def draw_patch(self, offset: int, size: int) -> np.ndarray:
-        self.wad.seek(offset)
-
         # See https://doomwiki.org/wiki/Picture_format for documentation
+
+        self.wad.seek(offset)
 
         # Ignoring left and top offset for sprites, as they are mainly to set the 'height' of monsters
         # or the place of hud elements
