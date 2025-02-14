@@ -161,14 +161,12 @@ class WAD_file:
 
         return rgb_image
 
-    def draw_patch(self, offset: int, size: int) -> np.ndarray:
+    def _read_patch_data(self, offset: int, size: int, flip=False) -> np.ndarray:
         # See https://doomwiki.org/wiki/Picture_format for documentation
 
         self.wad.seek(offset)
 
-        # Ignoring left and top offset for sprites, as they are mainly to set the 'height' of monsters
-        # or the place of hud elements
-        width, height, _, _ = struct.unpack("<2H2h", self.wad.read(8))
+        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.wad.read(8))
 
         column_offsets = [struct.unpack("<I", self.wad.read(4))[0] for _ in range(width)]
 
@@ -197,8 +195,19 @@ class WAD_file:
         image_alpha = image_alpha.T
         image_alpha = image_alpha[:, :, np.newaxis] * np.ones((1, 1, 4))
 
-        rgb_img = self.palette[image_data.T]
-        rgba_img = rgb_img * image_alpha
+        # Some enemies have only one direction for sprites and use a left-right flip for the other.
+        if flip:
+            image_data = np.fliplr(image_data)
+            image_alpha = np.fliplr(image_alpha)
+
+        return image_data.T, image_alpha, left_offset, top_offset
+
+    def draw_patch(self, offset, size):
+
+        img_data, alpha, _, _ = self._read_patch_data(offset, size)
+
+        rgb_img = self.palette[img_data.T]
+        rgba_img = rgb_img * alpha
 
         return rgba_img
 
