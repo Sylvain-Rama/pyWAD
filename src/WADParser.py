@@ -4,7 +4,7 @@ from loguru import logger
 import re
 import numpy as np
 
-from utils import DEFAULT_PALETTE, HEADER_FORMAT, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
+from src.utils import DEFAULT_PALETTE, HEADER_FORMAT, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
 class WAD_file:
