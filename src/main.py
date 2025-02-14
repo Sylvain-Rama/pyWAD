@@ -80,12 +80,14 @@ class WAD_file:
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # The first one is thus 768 bytes long.
         pal_rgb = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3))
+
+        # We will output in RGBA format, so adding an alpha channel with full opacity (255)
         pal_rgba = np.hstack((pal_rgb, np.ones((256, 1)) * 255))
 
         logger.info("Palette extracted.")
         return pal_rgba
 
-    def _parse_levels(self) -> dict:
+    def _parse_levels(self) -> dict[str : tuple[int, int]]:
         # retrieving maps lumps in DOOM1 or DOOM2 formats
         maps_idx = [i for i, item in enumerate(self.lump_names) if re.search(EXMY_REGEX, item)]
         if not maps_idx:
@@ -113,7 +115,9 @@ class WAD_file:
         logger.info(f"{len(maps_idx)} levels found in this WAD.")
         return map_dict
 
-    def _parse_by_markers(self, sequence_name: str = "FLATS", m_start: str = "F_START", m_end: str = "F_END"):
+    def _parse_by_markers(
+        self, sequence_name: str = "FLATS", m_start: str = "F_START", m_end: str = "F_END"
+    ) -> dict[str : tuple[int, int]]:
 
         if (m_start in self.lump_names) & (m_end in self.lump_names):
             start_idx = self.lump_names.index(m_start)
@@ -141,7 +145,7 @@ class WAD_file:
         logger.info(f"{len(res_dict.keys())} {sequence_name} found in this WAD.")
         return res_dict
 
-    def draw_flat(self, offset, size):
+    def draw_flat(self, offset: int, size: int) -> np.ndarray:
         if size != 4096:
             raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
 
@@ -153,7 +157,7 @@ class WAD_file:
 
         return rgb_image
 
-    def draw_patch(self, offset, size):
+    def draw_patch(self, offset: int, size: int) -> np.ndarray:
         self.wad.seek(offset)
 
         # See https://doomwiki.org/wiki/Picture_format for documentation
@@ -188,6 +192,7 @@ class WAD_file:
 
         image_alpha = image_alpha.T
         image_alpha = image_alpha[:, :, np.newaxis] * np.ones((1, 1, 4))
+
         rgb_img = self.palette[image_data.T]
         rgba_img = rgb_img * image_alpha
 
