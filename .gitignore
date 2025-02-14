@@ -172,6 +172,3 @@ cython_debug/
 
 # Local WAD files
 WADS/*.WAD
-
-# test notebook
-test.ipynb
