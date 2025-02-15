@@ -4,7 +4,7 @@ from loguru import logger
 import re
 import numpy as np
 
-from src.utils import DEFAULT_PALETTE, HEADER_FORMAT, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
+from src.utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
 class WAD_file:
@@ -32,7 +32,7 @@ class WAD_file:
         """Check if the file is a WAD file."""
         with open(path, "rb") as opened_file:
 
-            name, dir_size, dir_offset = struct.unpack(HEADER_FORMAT, opened_file.read(struct.calcsize(HEADER_FORMAT)))
+            name, dir_size, dir_offset = struct.unpack("<4sII", opened_file.read(12))
             name = name.decode("ascii")
             if name in ["IWAD", "PWAD"]:
                 self.dir_size = dir_size
