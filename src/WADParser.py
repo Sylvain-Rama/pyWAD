@@ -27,6 +27,7 @@ class WAD_file:
         self.maps = self._parse_levels()
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
+        self.spritesheets = self._get_spritesheets()
 
     def is_wad(self, path: str) -> bool:
         """Check if the file is a WAD file."""
@@ -148,6 +149,22 @@ class WAD_file:
 
         logger.info(f"{len(res_dict.keys())} {sequence_name} found in this WAD.")
         return res_dict
+
+    def _get_spritesheets(self) -> list[tuple[str, int, int]]:
+        """Convenient method to group every sprite by their names, to define the animation sequence."""
+        sprite_names = set([x[:4] for x in self.sprites.keys()])
+
+        sprite_dict = {}
+        for sprite_name in sprite_names:
+            sprite_dict[sprite_name] = [x for x in self.sprites.keys() if x.startswith(sprite_name)]
+
+        res = {}
+        for name, sprites in sprite_dict.items():
+
+            res[name] = [self.lumps[self.lump_names.index(sprite)] for sprite in sprites]
+            res[name] = sorted(res[name], key=lambda x: x[0])
+
+        return res
 
     def draw_flat(self, offset: int, size: int) -> np.ndarray:
         if size != 4096:
