@@ -4,7 +4,7 @@ from loguru import logger
 import re
 import numpy as np
 
-from src.utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
+from utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
 class WAD_file:
@@ -192,20 +192,19 @@ class WAD_file:
                 image_data[i, row_start : row_start + pixel_count] = pixels
                 image_alpha[i, row_start : row_start + pixel_count] = 1
 
-        image_alpha = image_alpha.T
-        image_alpha = image_alpha[:, :, np.newaxis] * np.ones((1, 1, 4))
-
         # Some enemies have only one direction for sprites and use a left-right flip for the other.
         if flip:
             image_data = np.fliplr(image_data)
             image_alpha = np.fliplr(image_alpha)
 
-        return image_data.T, image_alpha, left_offset, top_offset
+        return image_data, image_alpha, left_offset, top_offset
 
     def draw_patch(self, offset, size):
+        """Method to draw a single patch, with alpha channel."""
 
         img_data, alpha, _, _ = self._read_patch_data(offset, size)
 
+        alpha = alpha.T[:, :, np.newaxis] * np.ones((1, 1, 4))
         rgb_img = self.palette[img_data.T]
         rgba_img = rgb_img * alpha
 
