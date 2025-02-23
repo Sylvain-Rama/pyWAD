@@ -1,0 +1,250 @@
+decimal;hex;version;radius;height;sprite;sequence;class;description
+10060;274C;D;20;68;FDMN;XEFG+;MO*^;Afrit
+8080;1F90;C;32;64;DEM2;AA+;MO*;Brown chaos serpent
+107;6B;D;20;64;CENT;AB+;MO*;Centaur
+114;72;C;22;65;BISH;A+;MO*^;Dark bishop
+254;FE;C;20;65;DRAG;D+;MO*^;Death wyvern
+10030;272E;D;25;68;ETTN;AA+;MO*;Ettin
+31;1F;D;32;64;DEMN;AA+;MO*;Green chaos serpent
+10080;2760;C;40;110;SORC;AAA+;MO*;Heresiarch
+10200;27D8;C;65;115;KORX;A+;MO*;Korax
+10102;2776;C;16;64;MAGE;AAA+;MO*;Menelkir
+34;22;C;20;55;WRTH;ABAB+;MO*^;Reiver
+10011;271B;C;20;68;WRTH;AB+;M^;Reiver (buried)
+115;73;C;20;64;CENT;AB+;MO*;Slaughtaur
+121;79;C;32;70;SSPT;H+;MO;Stalker
+120;78;C;32;70;SSPT;H+;MO;Stalker boss
+10101;2775;C;16;64;CLER;AAA+;MO*;Traductus
+8020;1F54;D;22;75;ICEY;A+;MO*;Wendigo
+10100;2774;C;16;64;PLAY;AAA+;MO*;Zedek
+8040;1F68;C;20;16;WMLG;ABCDEFGH;WP1;Arc of Death
+21;15;C;20;16;WMS1;A;WP1;Bloodscourge (skull)
+23;17;D;20;16;WMS3;A;WP1;Bloodscourge (stick)
+22;16;C;20;16;WMS2;A;WP1;Bloodscourge (stub)
+8009;1F49;C;20;16;WCFM;ABCDEFGH;WP1;Firestorm
+53;35;D;20;16;WMCS;ABC;WP1;Frost shards
+123;7B;C;20;16;WFHM;A;WP1;Hammer of Retribution
+12;C;C;20;16;WFR1;A;WP1;Quietus (blade)
+13;D;C;20;16;WFR2;A;WP1;Quietus (cross)
+16;10;D;20;16;WFR3;A;WP1;Quietus (hilt)
+10;A;D;20;16;WCSS;A;WP1;Serpent staff
+8010;1F4A;D;20;16;WFAX;A;WP1;Timon's Axe
+18;12;C;20;16;WCH1;A;WP1;Wraithverge (arc)
+19;13;C;20;16;WCH2;A;WP1;Wraithverge (cross)
+20;14;D;20;16;WCH3;A;WP1;Wraithverge (shaft)
+122;7A;D;8;8;MAN1;ABCDEFGHI;P1;Blue mana
+8004;1F44;D;8;8;MAN3;ABCDEFGHIJKLMNOP;P2;Combined mana
+124;7C;C;8;8;MAN2;ABCDEFGHIJKLMNOP;P1;Green mana
+10040;2738;C;20;16;TELO;ABCD;P1;Banishment Device
+8002;1F42;C;20;16;SPED;ABCDEFGH;P1;Boots of Speed
+36;24;D;20;16;ATLP;ABCB;P1;Chaos Device
+86;56;C;20;16;SUMN;A;P1;Dark Servant
+10110;277E;C;20;16;BLST;ABCDEFGH;P1;Disc of Repulsion
+8041;1F69;D;20;16;BRAC;ABCDEFGH;P1;Dragonskin bracers
+8000;1F40;D;20;16;PSBG;A+;P1;Fl‚chette
+84;54;C;20;16;INVU;ABCD;P1;Icon of the Defender
+8003;1F43;C;20;16;BMAN;A;P1;Krater of Might
+10120;2788;D2;20;16;HRAD;ABCDEFGHIJKLMNOP;P1;Mystic Ambit Incant
+32;20;D;20;16;SPHL;A;P1;Mystic urn
+30;1E;C;20;16;PORK;ABCDEFGH;P1;Porkalator
+82;52;D;20;16;PTN2;ABC;P1;Quartz flask
+33;21;D;20;16;TRCH;ABC;P1;Torch
+83;53;D;20;16;SOAR;ABCB;P1;Wings of Wrath
+8008;1F48;D;20;16;ARM4;A;P1;Amulet of Warding
+81;51;D;20;16;PTN1;ABC;P2;Crystal vial
+8006;1F46;D;20;16;ARM2;A;P1;Falcon shield
+8005;1F45;C;20;16;ARM1;A;P1;Mesh armor
+8007;1F47;D;20;16;ARM3;A;P1;Platinum helm
+8032;1F60;C;8;20;KEY3;A;P;Axe key
+8200;2008;C;8;20;KEYB;A;P;Castle key
+8031;1F5F;C;8;20;KEY2;A;P;Cave key
+9021;233D;C;20;16;AGR4;ABCDEFGH;P;Clock gear (bronze in steel)
+9019;233B;C;20;16;AGR2;ABCDEFGH;P;Clock gear (bronze)
+9020;233C;C;20;16;AGR3;ABCDEFGH;P;Clock gear (steel in bronze)
+9018;233A;C;20;16;AGER;ABCDEFGH;P;Clock gear (steel)
+9007;232F;C;20;16;ABK1;A;P;Daemon Codex
+8035;1F63;C;8;20;KEY6;A;P;Dungeon key
+8034;1F62;D;8;20;KEY5;A;P;Emerald key
+9005;232D;C;20;16;AGMG;A;P;Emerald planet 1
+9009;2331;C;20;16;AGG2;A;P;Emerald planet 2
+8033;1F61;D;8;20;KEY4;A;P;Fire key
+9014;2336;D;20;16;ASK2;A;P;Flame Mask
+9015;2337;C;20;16;AFWP;A;P;Glaive Seal
+9003;232B;C;20;16;ABGM;A;P;Heart of D'Sparil
+9016;2338;C;20;16;ACWP;A;P;Holy Relic
+8038;1F66;C;8;20;KEY9;A;P;Horn key
+9008;2330;C;20;16;ABK2;A;P;Liber Oscura
+9004;232C;C;20;16;AGMR;A;P;Ruby planet
+8037;1F65;C;8;20;KEY8;A;P;Rusted key
+9006;232E;C;20;16;AGMB;A;P;Sapphire planet 1
+9010;2332;C;20;16;AGB2;A;P;Sapphire planet 2
+9017;2339;C;20;16;AMWP;A;P;Sigil of the Magus
+8036;1F64;D;8;20;KEY7;A;P;Silver key
+8030;1F5E;D;8;20;KEY1;A;P;Steel key
+8039;1F67;C;8;20;KEYA;A;P;Swamp key
+9002;232A;C;20;16;ASKU;A;P;Yorick's Skull
+8100;1FA4;C;15;32;BARL;A;O;Barrel
+77;4D;D;8;120;BNR1;A;O;Battle rag banner
+8065;1F81;D;56;120;BBLL;F+;O*^;Bell
+99;63;D;20;40;RKBK;A;O;Black rock
+8061;1F7D;D;6;35;BRTR;ABCDEFGHIJKLM;O;Brazier with flame
+8051;1F73;D;14;62;GAR8;A;O;Bronze gargoyle (short)
+8047;1F6F;D;14;108;GAR4;A;O;Bronze gargoyle (tall)
+97;61;D;17;72;RKBL;A;O;Brown rock (large)
+98;62;C;15;50;RKBS;A;O;Brown rock (small)
+8069;1F85;C;12;26;CDRN;BCDEFGH;O;Cauldron (lit)
+8070;1F86;C;12;26;CDRN;A;O;Cauldron (unlit)
+8049;1F71;D;14;62;GAR6;A;O;Dark lava gargoyle (short)
+8045;1F6D;D;14;108;GAR2;A;O;Dark lava gargoyle (tall)
+24;18;C;10;96;TRE1;A;O;Dead tree
+8062;1F7E;D;15;180;TRDT;A+;O*;Destructible tree
+8068;1F84;D;11;130;XMAS;A+;O*;Evergreen tree
+80;50;C;22;100;TRE6;A;O;Gnarled tree 1
+87;57;C;22;100;TRE7;A;O;Gnarled tree 2
+8103;1FA7;C;8;72;BCKT;A;O^;Hanging bucket
+71;47;D;6;75;CPS3;A;O^;Hanging corpse
+76;4C;D;14;62;STT5;A;O;Ice gargoyle (short)
+73;49;D;14;108;STT3;A;O;Ice gargoyle (tall)
+93;5D;D;8;66;ICM1;A;O;Ice spike (large)
+94;5E;D;5;50;ICM2;A;O;Ice spike (medium)
+95;5F;D;4;32;ICM3;A;O;Ice spike (small)
+96;60;D;4;8;ICM4;A;O;Ice spike (tiny)
+89;59;D;8;66;ICT1;A;O^;Icicle (large)
+90;5A;D;5;50;ICT2;A;O^;Icicle (medium)
+91;5B;D;4;32;ICT3;A;O^;Icicle (small)
+92;5C;D;4;8;ICT4;A;O^;Icicle (tiny)
+61;3D;D;10;92;CPS1;A;O;Impaled corpse
+8067;1F83;C;12;60;IRON;A;O;Iron maiden
+25;19;D;15;128;TRE1;A;O;Leafless tree
+8050;1F72;D;14;62;GAR7;A;O;Light lava gargoyle (short)
+8046;1F6E;D;14;108;GAR3;A;O;Light lava gargoyle (tall)
+108;6C;C;11;95;CPS4;A;O^;Lynched corpse
+109;6D;C;10;100;CPS5;A;O^;Lynched corpse (heartless)
+8042;1F6A;C;20;80;FBUL;ABCDEFG;O;Minotaur statue (lit)
+8043;1F6B;C;20;80;FBUL;H;O;Minotaur statue (unlit)
+60;3C;C;8;52;SWMV;A;O;Mossy dead tree
+15;F;D;20;16;RCK4;A;O;Mossy rock (large)
+26;1A;C;10;150;TRE2;A;O;Mossy tree 1
+27;1B;C;10;120;TRE3;A;O;Mossy tree 2
+9012;2334;C;10;40;GMPD;A+;O;Pedestal of D'Sparil
+103;67;C;12;54;VASE;A;O;Pillar with vase
+105;69;C;10;25;POT2;A;O*;Pot (medium)
+106;6A;D;15;25;POT3;A;O*;Pot (short)
+104;68;D;10;32;POT1;A;O*;Pot (tall)
+8044;1F6C;D;14;108;GAR1;A;O;Rusty gargoyle (tall)
+8102;1FA6;C;16;40;SHB2;A+;O*;Shrub (large)
+8101;1FA5;C;8;24;SHB1;A+;O*;Shrub (small)
+110;6E;C;15;35;CPS6;A;O*;Sitting corpse
+8060;1F7C;C;5;10;FSKL;ABCDEFGHI;O;Skull with flame
+52;34;C;8;66;SLC1;A;O^;Stalactite (large)
+56;38;C;6;50;SLC2;A;O^;Stalactite (medium)
+57;39;D;8;40;SLC3;A;O^;Stalactite (small)
+49;31;D;8;48;SGM1;A;O;Stalagmite (large)
+50;32;D;6;40;SGM2;A;O;Stalagmite (medium)
+51;33;C;8;36;SGM3;A;O;Stalagmite (small)
+48;30;D;8;138;SGMP;A;O;Stalagmite pillar
+8052;1F74;C;14;62;GAR9;A;O;Steel gargoyle (short)
+8048;1F70;D;14;108;GAR5;A;O;Steel gargoyle (tall)
+74;4A;D;14;62;STT4;A;O;Stone gargoyle (short)
+72;48;D;14;108;STT2;A;O;Stone gargoyle (tall)
+8064;1F80;C;16;72;SUIT;A+;O*;Suit of armor
+78;4E;D;15;180;TRE4;A;O;Tall tree 1
+79;4F;D;15;180;TRE5;A;O;Tall tree 2
+69;45;C;8;46;TMS7;A;O;Tombstone (Brian P)
+66;42;C;10;52;TMS4;A;O;Tombstone (Brian R)
+63;3F;C;10;46;TMS1;A;O;Tombstone (RIP)
+64;40;C;10;46;TMS2;A;O;Tombstone (Shane)
+67;43;C;10;52;TMS5;A;O;Tombstone (cross circle)
+65;41;C;10;46;TMS3;A;O;Tombstone (slimy)
+68;44;C;8;46;TMS6;A;O;Tombstone (small cross)
+88;58;C;20;25;LOGG;A;O;Tree log
+29;1D;D;12;20;STM2;A;O;Tree stump (bare)
+28;1C;D;12;20;STM1;A;O;Tree stump (burned)
+116;74;D;10;64;TWTR;ABCDEFGH;O;Twined torch (lit)
+117;75;D;10;64;TWTR;I;O;Twined torch (unlit)
+5;5;C;10;62;STTW;A;O;Winged statue
+9011;2333;C;10;62;STWN;A+;O;Yorick's statue
+119;77;C;20;16;CNDL;ABC;;3 Candles (lit)
+8066;1F82;C;20;16;CAND;ABCDE;;Blue candle (lit)
+100;64;C;20;16;RBL1;A;;Brick rubble (large)
+102;66;D;20;16;RBL3;A;;Brick rubble (medium)
+101;65;C;20;16;RBL2;A;;Brick rubble (small)
+8504;2138;C;20;16;TST5;A;;Candle w/o web (unlit)
+8502;2136;C;20;16;TST3;A;;Candle with web (unlit)
+8072;1F88;C;4;64;CHNS;B;^;Chain (long)
+8071;1F87;C;4;32;CHNS;A;^;Chain (short)
+8074;1F8A;C;4;32;CHNS;D;^;Chain with large hook
+8075;1F8B;C;4;32;CHNS;E;^;Chain with small hook
+8076;1F8C;C;4;32;CHNS;F;^;Chain with spike ball
+17;11;D;20;60;CDLR;ABC;^;Chandelier (lit)
+8063;1F7F;C;20;60;CDLR;D;^;Chandelier (unlit)
+8507;213B;C;20;16;TST8;A;;Goblet (short)
+8508;213C;C;20;16;TST9;A;;Goblet (silver)
+8505;2139;C;20;16;TST6;A;;Goblet (spilled)
+8506;213A;C;20;16;TST7;A;;Goblet (tall)
+8503;2137;C;20;16;TST4;A;;Gray candle (unlit)
+58;3A;D;20;20;MSS1;A;^;Hanging moss 1
+59;3B;D;20;24;MSS2;A;^;Hanging moss 2
+8073;1F89;C;4;32;CHNS;C;^;Hook with heart
+8077;1F8D;C;4;32;CHNS;G;^;Hook with skull
+10503;2907;C;20;16;FFLG;AAABCDEFGHIJKLMNOP;;Large flame
+10502;2906;D;20;16;FFLG;ABCDEFGHIJKLMNOP;;Large flame (timed)
+39;27;C;20;16;MSH1;A;;Large mushroom 1
+40;28;C;20;16;MSH2;A;;Large mushroom 2
+8509;213D;C;20;16;TST0;A;;Meat cleaver
+41;29;C;20;16;MSH3;A;;Medium mushroom
+8501;2135;C;20;16;TST2;A;;Metal beer stein
+9;9;D;20;16;RCK3;A;;Mossy rock (medium)
+7;7;D;20;16;RCK2;A;;Mossy rock (small)
+6;6;D;20;16;RCK1;A;;Mossy rock (tiny)
+111;6F;D;20;16;BDPL;A;;Pool of blood
+62;3E;C;20;16;CPS2;A;;Sleeping corpse
+10501;2905;C;20;16;FFSM;AAABCDE;;Small flame
+10500;2904;D;20;16;FFSM;ABCCDE;;Small flame (timed)
+42;2A;C;20;16;MSH4;A;;Small mushroom 1
+44;2C;C;20;16;MSH5;A;;Small mushroom 2
+45;2D;C;20;16;MSH6;A;;Small mushroom 3
+46;2E;C;20;16;MSH7;A;;Small mushroom 4
+47;2F;X;20;16;MSH8;A;;Small mushroom 5
+37;25;C;20;16;STM3;A;;Tree stump 1
+38;26;C;20;16;STM4;A;;Tree stump 2
+54;36;D;20;16;WLTR;ABCDEFGH;;Wall torch (lit)
+55;37;D;20;16;WLTR;I;;Wall torch (unlit)
+8500;2134;C;20;16;TST1;A;;Wooden beer stein
+1403;57B;D;20;16;none;-;;Creak
+1408;580;D;20;16;none;-;;Earth
+1401;579;D;20;16;none;-;;Heavy
+1407;57F;D;20;16;none;-;;Ice
+1405;57D;D;20;16;none;-;;Lava
+1402;57A;D;20;16;none;-;;Metal
+1409;581;D;20;16;none;-;;Metal2
+1404;57C;D;20;16;none;-;;Silence
+1400;578;C;20;16;none;-;;Stone
+1406;57E;D;20;16;none;-;;Water
+1410;582;D;20;16;none;-;;Wind
+10225;27F1;C;20;16;none;-;;Bat spawner
+11;B;D;20;16;none;-;;Deathmatch start
+10003;2713;D;20;16;FOGL;ABCDE;^;Fog patch (large)
+10002;2712;D;20;16;FOGM;ABCDE;^;Fog patch (medium)
+10001;2711;D;20;16;FOGS;ABCDE;^;Fog patch (small)
+10000;2710;C;20;16;none;-;;Fog spawner
+118;76;C;32;2;TLGL;AAA+;O;Glitter bridge
+113;71;D;20;16;none;-;;Leaf spawner
+9001;2329;D;20;16;none;-;;Map spot
+9013;2335;D;20;16;none;-;;Map spot (gravity)
+1;1;D;16;64;PLAY;A+;;Player 1 start
+2;2;D;16;64;PLAY;A+;;Player 2 start
+3;3;D;16;64;PLAY;A+;;Player 3 start
+4;4;D;16;64;PLAY;A+;;Player 4 start
+9100;238C;C;16;64;PLAY;A+;;Player 5 start
+9101;238D;C;16;64;PLAY;A+;;Player 6 start
+9102;238E;C;16;64;PLAY;A+;;Player 7 start
+9103;238F;C;16;64;PLAY;A+;;Player 8 start
+8104;1FA8;C;6;20;SHRM;AB+;O*;Poisonous mushroom
+3000;BB8;C;20;16;none;-;;Polyobject anchor
+3001;BB9;X;20;16;none;-;;Polyobject start spot
+3002;BBA;C;20;16;none;-;;Polyobject start spot (crush)
+10090;276A;C;20;128;TSPK;AAA+;;Spike down
+10091;276B;D;20;128;TSPK;AAA+;O;Spike up
+14;E;D;20;16;none;-;;Teleport landing
+140;8C;D;20;16;TSMK;ABCDEFGHIJKLMNOPQRSTUVWXYZ;;Teleport smoke

@@ -1,0 +1,97 @@
+decimal;hex;version;radius;height;sprite;sequence;class;description
+7;7;R;28;100;SRCR1;AB+;MO*;D'Sparil
+15;F;S;16;68;WZRD;AB+;MO*^;Disciple of D'Sparil
+5;5;S;16;36;IMPX;ABCB+;MO*^;Fire gargoyle
+66;42;S;16;36;IMPX;ABCB+;MO*^;Gargoyle
+68;44;S;22;62;MUMM;AB+;MO*;Golem
+69;45;S;22;62;MUMM;AB+;MO*;Golem ghost
+6;6;S;40;72;HEAD;A+;MO*;Iron lich
+9;9;R;28;100;MNTR;AB+;MO*;Maulotaur
+45;2D;S;22;62;MUMM;AB+;MO*;Nitrogolem
+46;2E;S;22;62;MUMM;AB+;MO*;Nitrogolem ghost
+92;5C;R;22;70;SNKE;AB+;MO*;Ophidian
+90;5A;R;20;64;CLNK;AB+;MO*;Sabreclaw
+64;40;S;24;78;KNIG;AB+;MO*;Undead warrior
+65;41;S;24;78;KNIG;AB+;MO*;Undead warrior ghost
+70;46;R;32;74;BEAS;AB+;MO*;Weredragon
+53;35;S;20;16;WBLS;A;WP;Dragon claw
+2001;7D1;S;20;16;WBOW;A;WP;Ethereal crossbow
+2002;7D2;R;20;16;WMCE;A;WP;Firemace
+2005;7D5;S;20;16;WGNT;A;WP;Gauntlets of the Necromancer
+2004;7D4;R;20;16;WSKL;A;WP;Hellstaff
+2003;7D3;R;20;16;WPHX;A;WP;Phoenix rod
+54;36;S;20;16;AMB1;ABC;P;Claw orb
+12;C;S;20;16;AMG2;ABC;P;Crystal geode
+55;37;S;20;16;AMB2;ABC;P;Energy orb
+18;12;S;20;16;AMC1;A;P;Ethereal arrows
+22;16;R;20;16;AMP1;ABC;P;Flame orb
+21;15;R;20;16;AMS2;AB;P;Greater runes
+23;17;R;20;16;AMP2;ABC;P;Inferno orb
+20;14;R;20;16;AMS1;AB;P;Lesser runes
+13;D;R;20;16;AMM1;A;P;Mace spheres
+16;10;R;20;16;AMM2;A;P;Pile of mace spheres
+19;13;S;20;16;AMC2;ABC;P;Quiver of ethereal arrows
+10;A;S;20;16;AMG1;A;P;Wand crystal
+8;8;S;20;16;BAGH;A;AP;Bag of Holding
+36;24;R;20;16;ATLP;ABCB;AP;Chaos Device
+35;23;S;20;16;SPMP;A;AP;Map scroll
+30;1E;S;20;16;EGGC;ABCB;AP;Morph Ovum
+32;20;R;20;16;SPHL;A;AP;Mystic urn
+82;52;S;20;16;PTN2;ABC;AP;Quartz flask
+84;54;S;20;16;INVU;ABCD;AP;Ring of Invincibility
+75;4B;S;20;16;INVS;A;AP;Shadowsphere
+34;22;S;20;16;FBMB;E+;AP;Time Bomb of the Ancients
+86;56;S;20;16;PWBK;A;AP;Tome of Power
+33;21;S;20;16;TRCH;ABC;AP;Torch
+83;53;S;20;16;SOAR;ABCB;AP;Wings of Wrath
+81;51;S;20;16;PTN1;ABC;P;Crystal vial
+31;1F;R;20;16;SHD2;A;P;Enchanted shield
+85;55;S;20;16;SHLD;A;P;Silver shield
+79;4F;S;20;16;BKYY;ABCDEFGHIJ;P;Blue key
+73;49;S;20;16;AKYY;ABCDEFGHIJ;P;Green key
+80;50;S;20;16;CKYY;ABCDEFGHI;P;Yellow key
+44;2C;S;12;32;BARL;A;O;Barrel
+76;4C;S;16;44;KFR1;ABCDEFGH;O;Fire brazier
+51;33;R;8;104;HCOR;A;O^;Hanging corpse
+40;28;R;12;68;STCL;A;O^;Large stalactite
+38;26;S;12;64;STGL;A;O;Large stalagmite
+27;1B;S;12;54;SRTC;ABC;O;Serpent torch
+29;1D;S;16;34;SMPL;A;O;Short grey pillar
+39;27;R;8;36;STCS;A;O^;Small stalactite
+37;25;S;8;32;STGS;A;O;Small stalagmite
+47;2F;R;14;128;BRPL;A;O;Tall brown pillar
+28;1C;S;20;60;CHDL;ABC;^;Chandelier
+17;11;S;20;70;SKH1;A;^;Hanging skull (long rope)
+24;18;S;20;60;SKH2;A;^;Hanging skull (medium rope)
+25;19;S;20;45;SKH3;A;^;Hanging skull (short rope)
+26;1A;S;20;35;SKH4;A;^;Hanging skull (shortest rope)
+49;31;R;20;27;MOS2;A;^;Moss 1 string
+48;30;R;20;23;MOS1;A;^;Moss 2 strings
+50;32;S;20;16;WTRH;ABC;;Wall torch
+1205;4B5;S;20;16;none;-;;Bells
+1202;4B2;S;20;16;none;-;;Drops
+1209;4B9;S;20;16;none;-;;Fast footsteps
+1206;4B6;R;20;16;none;-;;Growl
+1204;4B4;S;20;16;none;-;;Heart beat
+1208;4B8;S;20;16;none;-;;Laughter
+1207;4B7;R;20;16;none;-;;Magic
+1200;4B0;R;20;16;none;-;;Scream
+1203;4B3;S;20;16;none;-;;Slow footsteps
+1201;4B1;R;20;16;none;-;;Squish
+41;29;R;20;16;none;-;;Waterfall
+42;2A;S;20;16;none;-;;Wind
+56;38;R;20;16;none;-;;D'Sparil teleport spot
+11;B;S;20;16;none;-;;Deathmatch start
+94;5E;S;16;50;KGZ12;A;O;Key gizmo (blue)
+95;5F;S;16;50;KGZ12;A;O;Key gizmo (green)
+96;60;S;16;50;KGZ12;A;O;Key gizmo (yellow)
+1;1;S;16;56;PLAY;A+;;Player 1 start
+2;2;S;16;56;PLAY;A+;;Player 2 start
+3;3;S;16;56;PLAY;A+;;Player 3 start
+4;4;S;16;56;PLAY;A+;;Player 4 start
+2035;7F3;S;16;54;PPOD;A+;O*;Pod
+43;2B;S;20;16;none;-;;Pod generator
+52;34;S;20;16;TGLT;F+;;Teleport glitter (blue)
+74;4A;S;20;16;TGLT;A+;;Teleport glitter (red)
+14;E;S;20;16;none;-;;Teleport landing
+87;57;R;12;20;VLCO;A+;O;Volcano
