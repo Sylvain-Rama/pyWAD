@@ -278,7 +278,7 @@ class WAD_file:
 
         things_dict = defaultdict(list)
         for thing in things:
-            things_dict[self.id2sprites[thing[3]]].append((int(thing[0]), int(thing[1])))
+            things_dict[self.id2sprites.get(thing[3], "NONE")].append((int(thing[0]), int(thing[1])))
 
         map_info["things"] = things_dict
 
