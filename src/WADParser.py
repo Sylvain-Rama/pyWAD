@@ -1,6 +1,7 @@
 import os
 import csv
 import struct
+from collections import defaultdict
 from loguru import logger
 import re
 import numpy as np
@@ -75,21 +76,24 @@ class WAD_file:
 
         return lumps
 
-    def read_lump_data(self, lump_name: str):
+    def _lump_data(self, offset, size):
+        self.wad.seek(offset)
+        return self.wad.read(size)
+
+    def _lump_data_by_name(self, lump_name: str):
         if lump_name not in self.lump_names:
             raise ValueError(f"Unknown lump: {lump_name}.")
         else:
             lump_id = self.lump_names.index(lump_name)
             _, offset, size = self.lumps[lump_id]
-            self.wad.seek(offset)
-            return self.wad.read(size)
+            return self._lump_data(offset, size)
 
     def _get_palette(self) -> np.ndarray:
         if "PLAYPAL" not in self.lump_names:
             logger.info(f"No palette in this {self.wad_type}, loading the default one.")
             pal_b = DEFAULT_PALETTE
         else:
-            pal_b = self.read_lump_data("PLAYPAL")[:768]
+            pal_b = self._lump_data_by_name("PLAYPAL")[:768]
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # The first one is thus 768 bytes long.
@@ -247,6 +251,34 @@ class WAD_file:
         rgba_img = rgb_img * alpha
 
         return rgba_img
+
+    def map(self, map_name: str):
+        map_info = defaultdict(list)
+
+        lump = self._lump_data(*self.maps[map_name]["VERTEXES"])
+        vertices = np.array([struct.unpack("<hh", lump[i : i + 4]) for i in range(0, len(lump), 4)])
+
+        lump = self._lump_data(*self.maps[map_name]["LINEDEFS"])
+        linedefs = np.array([struct.unpack("<hhhhhhh", lump[i : i + 14]) for i in range(0, len(lump), 14)])
+        linedefs = linedefs.astype(np.int16)
+
+        lines = vertices[linedefs[:, 0:2]]
+        flags = linedefs[:, 2]
+
+        for line, flag in zip(lines, flags):
+            if flag & 0x20:  # Secret
+                map_info["secret"].append(line)
+            elif flag & 0x01:  # Impassable
+                map_info["walls"].append(line)
+            elif flag & 0x04:  # Two-sided, can see through
+                map_info["steps"].append(line)
+
+        lump = self._lump_data(*self.maps[map_name]["THINGS"])
+        things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
+
+        map_info["things"] = things
+
+        return map_info
 
 
 def main():

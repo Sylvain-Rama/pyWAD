@@ -172,3 +172,4 @@ cython_debug/
 
 # Local WAD files
 WADS/*.WAD
+*.ipynb
