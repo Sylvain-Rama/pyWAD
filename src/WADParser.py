@@ -98,8 +98,6 @@ class WAD_file:
     def _parse_things(self) -> dict[str:str]:
         # Load the THINGS IDs to names mapping
         id2sprite = {}
-        print(os.getcwd())
-
         with open(f"src/THINGS/{self.game_type}.csv", newline="") as csvfile:
             csvreader = csv.reader(csvfile, delimiter=";", quotechar="|")
             header = next(csvreader)  # Skips the column names
