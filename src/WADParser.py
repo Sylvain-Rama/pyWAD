@@ -112,7 +112,7 @@ class WAD_file:
             csvreader = csv.reader(csvfile, delimiter=";", quotechar="|")
             header = next(csvreader)  # Skips the column names
             for row in csvreader:
-                id2sprite[row[0]] = row[5] + row[6][0]
+                id2sprite[int(row[0])] = row[5] + row[6][0]
 
         logger.info(f"{self.game_type} THINGS loaded.")
         return id2sprite
@@ -260,9 +260,9 @@ class WAD_file:
 
         lump = self._lump_data(*self.maps[map_name]["LINEDEFS"])
         linedefs = np.array([struct.unpack("<hhhhhhh", lump[i : i + 14]) for i in range(0, len(lump), 14)])
-        linedefs = linedefs.astype(np.int16)
+        linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
 
-        lines = vertices[linedefs[:, 0:2]]
+        lines = vertices[linecoords]
         flags = linedefs[:, 2]
 
         for line, flag in zip(lines, flags):
@@ -276,7 +276,11 @@ class WAD_file:
         lump = self._lump_data(*self.maps[map_name]["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
 
-        map_info["things"] = things
+        things_dict = defaultdict(list)
+        for thing in things:
+            things_dict[self.id2sprites[thing[3]]].append((int(thing[0]), int(thing[1])))
+
+        map_info["things"] = things_dict
 
         return map_info
 
