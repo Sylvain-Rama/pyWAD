@@ -27,7 +27,7 @@ class WAD_file:
         self.game_type = "DOOM"
         if "TINTTAB" in self.lump_names:
             self.game_type = "HERETIC"
-        if "BEHAVIOUR" in self.lump_names:
+        if "BEHAVIOR" in self.lump_names:
             self.game_type = "HEXEN"
         logger.info(f"{self.game_type} {self.wad_type} found at {wad_path}.")
 
