@@ -17,13 +17,20 @@ class WAD_file:
             raise ValueError(f"No file detected at {wad_path}")
 
         if self.is_wad(wad_path):
-            logger.info(f"{self.wad_type} found at {wad_path}")
             self.wad = open(wad_path, "rb")
         else:
             raise TypeError(f"{wad_path} is not a WAD file.")
 
         self.lumps = self._get_lumps()
         self.lump_names = [lump[0] for lump in self.lumps]
+
+        self.game_type = "DOOM"
+        if "TINTTAB" in self.lump_names:
+            self.game_type = "HERETIC"
+        if "BEHAVIOUR" in self.lump_names:
+            self.game_type = "HEXEN"
+        logger.info(f"{self.game_type} {self.wad_type} found at {wad_path}.")
+
         self.palette = self._get_palette()
         self.maps = self._parse_levels()
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
@@ -42,7 +49,6 @@ class WAD_file:
                 self.dir_offset = dir_offset
                 self.wad_path = path
                 self.wad_type = name
-                self.game_type = "DOOM"
 
                 return True
 
