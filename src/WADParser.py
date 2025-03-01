@@ -1,4 +1,5 @@
 import os
+import csv
 import struct
 from loguru import logger
 import re
@@ -28,6 +29,7 @@ class WAD_file:
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
         self.spritesheets = self._get_spritesheets()
+        self.id2sprites = self._parse_things()
 
     def is_wad(self, path: str) -> bool:
         """Check if the file is a WAD file."""
@@ -40,6 +42,7 @@ class WAD_file:
                 self.dir_offset = dir_offset
                 self.wad_path = path
                 self.wad_type = name
+                self.game_type = "DOOM"
 
                 return True
 
@@ -91,6 +94,20 @@ class WAD_file:
 
         logger.info("Palette extracted.")
         return pal_rgba
+
+    def _parse_things(self) -> dict[str:str]:
+        # Load the THINGS IDs to names mapping
+        id2sprite = {}
+        print(os.getcwd())
+
+        with open(f"src/THINGS/{self.game_type}.csv", newline="") as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=";", quotechar="|")
+            header = next(csvreader)  # Skips the column names
+            for row in csvreader:
+                id2sprite[row[0]] = row[5] + row[6][0]
+
+        logger.info(f"{self.game_type} THINGS loaded.")
+        return id2sprite
 
     def _parse_levels(self) -> dict[str : tuple[int, int]]:
         # retrieving maps lumps in DOOM1 or DOOM2 formats
