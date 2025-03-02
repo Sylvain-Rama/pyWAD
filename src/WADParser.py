@@ -35,7 +35,7 @@ class WAD_file:
             self.game_type = "HERETIC"
         if "BEHAVIOR" in self.lump_names:
             self.game_type = "HEXEN"
-        logger.info(f"{self.game_type} {self.wad_type} found at {wad_path}.")
+        logger.info(f"{self.game_type} {self.wad_type}.")
 
         self.palette = self._get_palette()
         self.maps = self._parse_levels()
@@ -46,7 +46,7 @@ class WAD_file:
 
     def _get_directory(self, bytestring: bytes):
         """Get the directory of the WAD file."""
-        _, dir_size, dir_offset = struct.unpack("<4sII", bytestring.read(12))
+        name, dir_size, dir_offset = struct.unpack("<4sII", bytestring.read(12))
         name = name.decode("ascii")
         if name in ["IWAD", "PWAD"]:
             self.dir_size = dir_size
