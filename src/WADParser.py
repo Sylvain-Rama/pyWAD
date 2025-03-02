@@ -9,18 +9,23 @@ import numpy as np
 from src.utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
+def open_wad_file(wad_path: str):
+    """Open a WAD file and return a WAD_file object."""
+
+    if not os.path.isfile(wad_path):
+        raise ValueError(f"No file detected at {wad_path}")
+
+    else:
+        with open(wad_path, "rb") as opened_file:
+            return WAD_file(opened_file)
+
+
 class WAD_file:
-    def __init__(self, wad_path: str):
+    def __init__(self, byte_string: bytes):
         """This class is used to parse a WAD file and extract its lumps.
         It also provides methods to parse the levels and extract the flats and sprites."""
 
-        # if not os.path.isfile(wad_path):
-        #     raise ValueError(f"No file detected at {wad_path}")
-
-        if self.is_wad(wad_path):
-            self.wad = open(wad_path, "rb")
-        else:
-            raise TypeError(f"{wad_path} is not a WAD file.")
+        self._get_directory(byte_string)
 
         self.lumps = self._get_lumps()
         self.lump_names = [lump[0] for lump in self.lumps]
@@ -38,6 +43,18 @@ class WAD_file:
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
         self.spritesheets = self._get_spritesheets()
         self.id2sprites = self._parse_things()
+
+    def _get_directory(self, bytestring: bytes):
+        """Get the directory of the WAD file."""
+        _, dir_size, dir_offset = struct.unpack("<4sII", bytestring.read(12))
+        name = name.decode("ascii")
+        if name in ["IWAD", "PWAD"]:
+            self.dir_size = dir_size
+            self.dir_offset = dir_offset
+            self.wad_type = name
+            self.wad = bytestring
+        else:
+            raise TypeError("This is not a WAD file.")
 
     def is_wad(self, path: str) -> bool:
         """Check if the file is a WAD file."""
