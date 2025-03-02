@@ -34,7 +34,7 @@ class WAD_file:
             self.game_type = "HERETIC"
         if "BEHAVIOR" in self.lump_names:
             self.game_type = "HEXEN"
-        logger.info(f"{self.game_type} {self.wad_type}.")
+        logger.info(f"Found a {self.game_type} {self.wad_type}.")
 
         self.palette = self._get_palette()
         self.maps = self._parse_levels()
@@ -53,6 +53,7 @@ class WAD_file:
             self.wad_type = name
             self.wad = bytestring
         else:
+            bytestring = "None"
             raise TypeError("This is not a WAD file.")
 
     def is_wad(self, path: str) -> bool:
