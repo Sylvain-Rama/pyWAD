@@ -16,8 +16,7 @@ def open_wad_file(wad_path: str):
         raise ValueError(f"No file detected at {wad_path}")
 
     else:
-        with open(wad_path, "rb") as opened_file:
-            return WAD_file(opened_file)
+        return WAD_file(open(wad_path, "rb"))
 
 
 class WAD_file:
