@@ -6,7 +6,7 @@ from loguru import logger
 import re
 import numpy as np
 
-from utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
+from src.utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
 class WAD_file:
@@ -14,8 +14,8 @@ class WAD_file:
         """This class is used to parse a WAD file and extract its lumps.
         It also provides methods to parse the levels and extract the flats and sprites."""
 
-        if not os.path.isfile(wad_path):
-            raise ValueError(f"No file detected at {wad_path}")
+        # if not os.path.isfile(wad_path):
+        #     raise ValueError(f"No file detected at {wad_path}")
 
         if self.is_wad(wad_path):
             self.wad = open(wad_path, "rb")
