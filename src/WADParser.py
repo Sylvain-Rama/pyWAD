@@ -1,11 +1,14 @@
 import os
 import csv
 import struct
+import sys
 from collections import defaultdict
 from loguru import logger
 import re
 import numpy as np
 
+
+sys.path.append("src/")
 from utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
