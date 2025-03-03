@@ -23,10 +23,12 @@ if page == "View Lumps":
 
 elif page == "Maps":
     if wad is not None:
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1, col2, col3, _, _ = st.columns([1, 1, 1, 1, 1])
         with col1:
-            chosen_map = st.selectbox("Select a map", wad.maps.keys())
+            chosen_map = st.selectbox("Map", wad.maps.keys())
         with col2:
-            palette = st.selectbox("Select a palette", ["DOOM", "OMGIFOL", "HERETIC"])
+            palette = st.selectbox("Palette", ["DOOM", "OMGIFOL", "HERETIC"])
+        with col3:
+            show_things = st.checkbox("Show Things")
         fig = draw_map(wad.map(chosen_map), palette=palette)
         st.pyplot(fig)

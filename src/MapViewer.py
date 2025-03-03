@@ -7,7 +7,10 @@ from src.palettes import MAP_CMAPS
 
 def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
     if ax is None:
-        fig, ax = plt.subplots(figsize=(12, 12))
+        width, height = map_data["metadata"]["map_size"]
+        wh_ratio = width / height
+
+        fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio))
         output_fig = True
 
     cmap = MAP_CMAPS[palette]
@@ -33,6 +36,7 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
     ax.axis("off")
 
     if output_fig:
+        fig.tight_layout(pad=0.2)
         return fig
 
 
@@ -54,4 +58,4 @@ if __name__ == "__main__":
     for map_name in maps_to_draw:
         map_data = wad.map(args.map)
         fig = draw_map(map_data, palette=args.palette)
-        fig.savefig(f"output/{map_name}.png")
+        fig.savefig(f"output/{map_name}.png", bbox_inches="tight")
