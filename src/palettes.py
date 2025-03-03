@@ -53,21 +53,21 @@ DEFAULT_PALETTE = b"\
 # Color schemes for drawing maps, RGBA format
 MAP_CMAPS = {
     "DOOM": {
-        "background": (0, 0, 0, 255),
-        "block": (255, 0, 0, 255),
-        "2-sided": (255, 255, 0, 255),
-        "secret": (255, 0, 255, 255),
+        "background": [0, 0, 0],
+        "block": [255, 0, 0],
+        "2-sided": [255, 255, 0],
+        "secret": [255, 0, 255],
     },
     "OMGIFOL": {
-        "background": (255, 255, 255, 255),
-        "block": (0, 0, 0, 255),
-        "2-sided": (128, 128, 128, 255),
-        "secret": (255, 0, 255, 255),
+        "background": [255, 255, 255],
+        "block": [0, 0, 0],
+        "2-sided": [128, 128, 128],
+        "secret": [255, 0, 255],
     },
     "HERETIC": {
-        "background": (0, 0, 0, 255),
-        "block": (255, 0, 0, 255),
-        "2-sided": (255, 255, 0, 255),
-        "secret": (255, 0, 255, 255),
+        "background": [0, 0, 0],
+        "block": [255, 0, 0],
+        "2-sided": [255, 255, 0],
+        "secret": [255, 0, 255],
     },
 }
