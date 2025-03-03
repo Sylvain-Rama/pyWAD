@@ -271,9 +271,15 @@ class WAD_file:
 
     def map(self, map_name: str):
         map_info = defaultdict(list)
+        metadata = {}
 
         lump = self._lump_data(*self.maps[map_name]["VERTEXES"])
         vertices = np.array([struct.unpack("<hh", lump[i : i + 4]) for i in range(0, len(lump), 4)])
+
+        map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
+        metadata["map_lims"] = map_lims
+        metadata["map_size"] = (map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
+        metadata["map_name"] = map_name
 
         lump = self._lump_data(*self.maps[map_name]["LINEDEFS"])
         linedefs = np.array([struct.unpack("<hhhhhhh", lump[i : i + 14]) for i in range(0, len(lump), 14)])
@@ -298,6 +304,7 @@ class WAD_file:
             things_dict[self.id2sprites.get(thing[3], "NONE")].append((int(thing[0]), int(thing[1])))
 
         map_info["things"] = things_dict
+        map_info["metadata"] = metadata
 
         return map_info
 

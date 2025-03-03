@@ -13,7 +13,8 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
     cmap = MAP_CMAPS[palette]
 
     bckgrd_color = [x / 255 for x in cmap["background"]]
-    ax.set_facecolor(bckgrd_color)
+    print(bckgrd_color)
+    ax.set_facecolor("black")
 
     step_color = [x / 255 for x in cmap["2-sided"]]
     for line in map_data["steps"]:
