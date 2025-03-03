@@ -9,8 +9,6 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("WAD Viewer")
-
 with st.sidebar:
     st.header("WAD Viewer")
     page = st.radio("Go to", ["View Lumps", "Maps"])
@@ -25,6 +23,10 @@ if page == "View Lumps":
 
 elif page == "Maps":
     if wad is not None:
-        option = st.selectbox("Select a map", wad.maps.keys())
-        fig = draw_map(wad.map(option))
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col1:
+            chosen_map = st.selectbox("Select a map", wad.maps.keys())
+        with col2:
+            palette = st.selectbox("Select a palette", ["DOOM", "OMGIFOL", "HERETIC"])
+        fig = draw_map(wad.map(chosen_map), palette=palette)
         st.pyplot(fig)
