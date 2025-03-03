@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
 import argparse
+import sys
+from loguru import logger
 
-from src.WADParser import WAD_file
-from src.palettes import MAP_CMAPS
+sys.path.append("src/")
+
+from WADParser import WAD_file, open_wad_file
+from palettes import MAP_CMAPS
 
 
 def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
@@ -16,8 +20,7 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
     cmap = MAP_CMAPS[palette]
 
     bckgrd_color = [x / 255 for x in cmap["background"]]
-    print(bckgrd_color)
-    ax.set_facecolor("black")
+    ax.set_facecolor(bckgrd_color)
 
     step_color = [x / 255 for x in cmap["2-sided"]]
     for line in map_data["steps"]:
@@ -35,6 +38,8 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
     ax.axis("equal")
     ax.axis("off")
 
+    logger.info(f'Plotted map {map_data["metadata"]["map_name"]}.')
+
     if output_fig:
         fig.tight_layout(pad=0.2)
         return fig
@@ -48,7 +53,7 @@ if __name__ == "__main__":
     args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
 
     args = args.parse_args()
-    wad = WAD_file(args.wad)
+    wad = open_wad_file(args.wad)
 
     if args.map == "*":
         maps_to_draw = wad.maps.keys()
@@ -56,6 +61,6 @@ if __name__ == "__main__":
         maps_to_draw = [args.map]
 
     for map_name in maps_to_draw:
-        map_data = wad.map(args.map)
+        map_data = wad.map(map_name)
         fig = draw_map(map_data, palette=args.palette)
         fig.savefig(f"output/{map_name}.png", bbox_inches="tight")

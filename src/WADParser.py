@@ -6,7 +6,7 @@ from loguru import logger
 import re
 import numpy as np
 
-from src.utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
+from utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
 
 
 def open_wad_file(wad_path: str):
