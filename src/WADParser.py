@@ -45,6 +45,7 @@ class WAD_file:
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
         self.spritesheets = self._get_spritesheets()
         self.id2sprites = self._parse_things()
+        self.textures = self._gather_textures()
 
     def _get_directory(self, bytestring: bytes):
         """Get the directory of the WAD file."""
@@ -311,9 +312,64 @@ class WAD_file:
 
         return map_info
 
+    def _parse_patches(self):
+        lump = self._lump_data_by_name("PNAMES")
+
+        n_patches = int.from_bytes(lump[0:4], byteorder="little")
+        patches = []
+        for i in range(n_patches):
+            patch_name = lump[4 + i * 8 : 4 + (i + 1) * 8].decode("ascii").rstrip("\0")
+            patches.append(patch_name)
+        return patches
+
+    def _parse_textures(self, lump_names, patches):
+        textures = {}
+        for lump_name in lump_names:
+
+            lump_id = self.lump_names.index(lump_name)
+            _, lump_offset, size = self.lumps[lump_id]
+
+            self.wad.seek(lump_offset)
+            texture1_data = self.wad.read(size)
+
+            numtextures = int.from_bytes(texture1_data[0:4], byteorder="little")
+            self.wad.seek(lump_offset + 4)
+
+            textures_offsets = []
+            for i in range(numtextures):
+                offset = int.from_bytes(self.wad.read(4), byteorder="little")
+                textures_offsets.append(offset)
+
+            for tx_offset in textures_offsets:
+                self.wad.seek(lump_offset + tx_offset)
+                texture_name = self.wad.read(8).decode("ascii").rstrip("\0")
+
+                mask, width, height, col_dir = struct.unpack("<ihhi", self.wad.read(12))
+
+                patch_count = int.from_bytes(self.wad.read(2), byteorder="little")
+                map_patches = np.array([struct.unpack("<hhhhh", self.wad.read(10)) for i in range(patch_count)])
+
+                orig_x = map_patches[:, 0]
+                orig_y = map_patches[:, 1]
+                patch_idxs = map_patches[:, 2]
+
+                patch_infos = [(patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i])) for i in range(patch_count)]
+                textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
+
+            return textures
+
+    def _gather_textures(self):
+
+        patches = self._parse_patches()
+
+        lump_names = ["TEXTURE1", "TEXTURE2"]
+        textures = self._parse_textures(lump_names, patches)
+        logger.info(f"Parsed {len(textures)} textures.")
+        return textures
+
 
 def main():
-    WAD_file("WADs/DOOM2.WAD")
+    parsed_wad = open_wad_file("WADs/DOOM2.WAD")
 
 
 if __name__ == "__main__":

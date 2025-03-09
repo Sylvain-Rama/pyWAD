@@ -1,6 +1,6 @@
 import streamlit as st
 from src.WADParser import WAD_file
-from src.MapViewer import draw_map
+from src.WADViewer import draw_map
 
 
 st.set_page_config(
