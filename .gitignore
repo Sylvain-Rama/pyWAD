@@ -174,3 +174,4 @@ cython_debug/
 WADS/*.WAD
 *.ipynb
 output/*.png
+*.html
