@@ -100,9 +100,10 @@ def draw_tex(wad, tex_name, ax=None, scaler=1):
     rgb_img = wad.palette[pixmap.T]
 
     rgba_img = rgb_img * alphamap
-    ax.imshow(rgba_img / 255)
+    ax.imshow(rgba_img / 255, interpolation="nearest", aspect=1.2)
 
-    return fig
+    if output_fig:
+        return fig
 
 
 if __name__ == "__main__":

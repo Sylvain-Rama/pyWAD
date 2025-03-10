@@ -323,49 +323,56 @@ class WAD_file:
             patches.append(patch_name)
         return patches
 
-    def _parse_textures(self, lump_names, patches):
+    def _parse_textures(self, lump_name, patches):
         textures = {}
-        for lump_name in lump_names:
 
-            lump_id = self.lump_names.index(lump_name)
-            _, lump_offset, size = self.lumps[lump_id]
+        lump_id = self.lump_names.index(lump_name)
+        _, lump_offset, size = self.lumps[lump_id]
 
-            self.wad.seek(lump_offset)
-            texture1_data = self.wad.read(size)
+        self.wad.seek(lump_offset)
+        texture1_data = self.wad.read(size)
 
-            numtextures = int.from_bytes(texture1_data[0:4], byteorder="little")
-            self.wad.seek(lump_offset + 4)
+        numtextures = int.from_bytes(texture1_data[0:4], byteorder="little")
+        self.wad.seek(lump_offset + 4)
 
-            textures_offsets = []
-            for i in range(numtextures):
-                offset = int.from_bytes(self.wad.read(4), byteorder="little")
-                textures_offsets.append(offset)
+        textures_offsets = []
+        for i in range(numtextures):
+            offset = int.from_bytes(self.wad.read(4), byteorder="little")
+            textures_offsets.append(offset)
 
-            for tx_offset in textures_offsets:
-                self.wad.seek(lump_offset + tx_offset)
-                texture_name = self.wad.read(8).decode("ascii").rstrip("\0")
+        for tx_offset in textures_offsets:
+            self.wad.seek(lump_offset + tx_offset)
+            texture_name = self.wad.read(8).decode("ascii").rstrip("\0")
 
-                mask, width, height, col_dir = struct.unpack("<ihhi", self.wad.read(12))
+            mask, width, height, col_dir = struct.unpack("<ihhi", self.wad.read(12))
 
-                patch_count = int.from_bytes(self.wad.read(2), byteorder="little")
-                map_patches = np.array([struct.unpack("<hhhhh", self.wad.read(10)) for i in range(patch_count)])
+            patch_count = int.from_bytes(self.wad.read(2), byteorder="little")
+            map_patches = np.array([struct.unpack("<hhhhh", self.wad.read(10)) for i in range(patch_count)])
 
-                orig_x = map_patches[:, 0]
-                orig_y = map_patches[:, 1]
-                patch_idxs = map_patches[:, 2]
+            orig_x = map_patches[:, 0]
+            orig_y = map_patches[:, 1]
+            patch_idxs = map_patches[:, 2]
 
-                patch_infos = [(patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i])) for i in range(patch_count)]
-                textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
+            patch_infos = [(patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i])) for i in range(patch_count)]
+            textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
 
-            return textures
+        return textures
 
     def _gather_textures(self):
+        tex_lumps = [lump for lump in self.lump_names if TEX_REGEX.match(lump)]
+
+        if (len(tex_lumps) == 0) | ("PNAMES" not in self.lump_names):
+            logger.info("No textures found.")
+            return None
 
         patches = self._parse_patches()
 
-        lump_names = ["TEXTURE1", "TEXTURE2"]
-        textures = self._parse_textures(lump_names, patches)
-        logger.info(f"Found {len(textures)} textures.")
+        textures = {}
+        for tex_name in tex_lumps:
+            texs = self._parse_textures(tex_name, patches)
+            textures.update(texs)
+
+        logger.info(f"Found {len(textures)} textures in {len(tex_lumps)} texture lumps.")
         return textures
 
 
