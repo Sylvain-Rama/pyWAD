@@ -9,7 +9,8 @@ import numpy as np
 
 
 sys.path.append("src/")
-from utils import DEFAULT_PALETTE, EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS
+from utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
+from palettes import DEFAULT_PALETTE
 
 
 def open_wad_file(wad_path: str):
@@ -364,7 +365,7 @@ class WAD_file:
 
         lump_names = ["TEXTURE1", "TEXTURE2"]
         textures = self._parse_textures(lump_names, patches)
-        logger.info(f"Parsed {len(textures)} textures.")
+        logger.info(f"Found {len(textures)} textures.")
         return textures
 
 
