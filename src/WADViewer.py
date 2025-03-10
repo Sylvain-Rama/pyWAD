@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import argparse
 import sys
 from loguru import logger
@@ -45,7 +46,7 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
         return fig
 
 
-def draw_tex(wad, tex_name):
+def draw_tex(wad, tex_name, ax=None, scaler=1):
     def paste_array(original, paste, x, y):
         """
         Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
@@ -71,7 +72,37 @@ def draw_tex(wad, tex_name):
 
         return original
 
-    return
+    texture_data = wad.textures[tex_name]
+    pix_width, pix_height = texture_data["width"], texture_data["height"]
+
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=(pix_width / 100 * scaler, pix_height / 100 * scaler))
+        ax.axis("off")
+        ax.set_aspect("equal")
+        output_fig = True
+
+    pixmap = np.zeros((pix_width, pix_height), dtype=np.uint8)
+    alphamap = np.zeros((pix_width, pix_height), dtype=np.uint8)
+
+    for patch_name, x, y in texture_data["patches"]:
+
+        idx = wad.lump_names.index(patch_name)
+
+        _, offset, size = wad.lumps[idx]
+        img, alpha, _, _ = wad._read_patch_data(offset, size)
+
+        # x and y are flipped as the image will be transposed after
+        pixmap = paste_array(pixmap, img, y, x)
+        alphamap = paste_array(alphamap, alpha, y, x)
+
+    alphamap = alphamap.T[:, :, np.newaxis] * np.ones((1, 1, 4))
+
+    rgb_img = wad.palette[pixmap.T]
+
+    rgba_img = rgb_img * alphamap
+    ax.imshow(rgba_img / 255)
+
+    return fig
 
 
 if __name__ == "__main__":
@@ -79,10 +110,11 @@ if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.wad")
     args.add_argument(
-        "--command", type=str, help="Command to run", choices=["draw_map", "draw_tex"], default="draw_map"
+        "--command", "-c", type=str, help="Command to run", choices=["draw_map", "draw_tex"], default="draw_map"
     )
     args.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
     args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
+    args.add_argument("--texture", "-t", type=str, help="Texture name", default="AASTINKY")
 
     args = args.parse_args()
     wad = open_wad_file(args.wad)
@@ -97,3 +129,13 @@ if __name__ == "__main__":
             map_data = wad.map(map_name)
             fig = draw_map(map_data, palette=args.palette)
             fig.savefig(f"output/{map_name}.png", bbox_inches="tight", dpi=300)
+
+    elif args.command == "draw_tex":
+        if args.texture == "*":
+            textures_to_draw = wad.textures.keys()
+        else:
+            textures_to_draw = [args.texture]
+
+        for texture_name in textures_to_draw:
+            fig = draw_tex(wad, texture_name)
+            fig.savefig(f"output/{texture_name}.png", bbox_inches="tight", dpi=300)
