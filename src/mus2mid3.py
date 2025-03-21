@@ -4,6 +4,9 @@ from enum import IntEnum
 from typing import BinaryIO
 from loguru import logger
 
+"""Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
+See https://svn.prboom.org/repos/tags/prboom-plus-2.5.0.1/src/mus2mid.c"""
+
 # Constants
 NUM_CHANNELS = 16
 MIDI_PERCUSSION_CHAN = 9
@@ -122,7 +125,6 @@ def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> bool:
     """Converts a MUS file to a MIDI file."""
     global queuedtime, tracksize
     musfileheader = read_mus_header(musinput)
-    logger.info(f"MUS file header: {musfileheader}")
 
     if musfileheader.id != b"MUS\x1a":
         raise ValueError("Not a MUS file")
