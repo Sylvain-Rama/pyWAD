@@ -1,11 +1,13 @@
 import struct
 from enum import Enum, IntEnum
 from typing import List, Tuple
+from loguru import logger
 
 # Constants
 NUM_CHANNELS = 16
 MIDI_PERCUSSION_CHAN = 9
 MUS_PERCUSSION_CHAN = 15
+
 
 # MUS event codes
 class Musevent(IntEnum):
@@ -15,6 +17,7 @@ class Musevent(IntEnum):
     SYSTEMEVENT = 0x30
     CHANGECONTROLLER = 0x40
     SCOREEND = 0x60
+
 
 # MIDI event codes
 class Midievent(IntEnum):
@@ -26,9 +29,18 @@ class Midievent(IntEnum):
     AFTERTOUCHCHANNEL = 0xD0
     PITCHWHEEL = 0xE0
 
+
 # Structure to hold MUS file header
 class MusHeader:
-    def __init__(self, id: bytes, scorelength: int, scorestart: int, primarychannels: int, secondarychannels: int, instrumentcount: int):
+    def __init__(
+        self,
+        id: bytes,
+        scorelength: int,
+        scorestart: int,
+        primarychannels: int,
+        secondarychannels: int,
+        instrumentcount: int,
+    ):
         self.id = id
         self.scorelength = scorelength
         self.scorestart = scorestart
@@ -36,8 +48,12 @@ class MusHeader:
         self.secondarychannels = secondarychannels
         self.instrumentcount = instrumentcount
 
+    def __repr__(self) -> str:
+        return f"MusHeader(id={self.id}, scorelength={self.scorelength}, scorestart={self.scorestart}, primarychannels={self.primarychannels}, secondarychannels={self.secondarychannels}, instrumentcount={self.instrumentcount})"
+
+
 # Standard MIDI type 0 header + track header
-midiheader = b'MThd' + struct.pack('>IHHH', 6, 0, 1, 0x46) + b'MTrk' + struct.pack('>I', 0)
+midiheader = b"MThd" + struct.pack(">IHHH", 6, 0, 1, 0x46) + b"MTrk" + struct.pack(">I", 0)
 
 # Cached channel velocities
 channelvelocities = [127] * NUM_CHANNELS
@@ -49,23 +65,26 @@ queuedtime = 0
 tracksize = 0
 
 # Controller map
-controller_map = [
-    0x00, 0x20, 0x01, 0x07, 0x0A, 0x0B, 0x5B, 0x5D,
-    0x40, 0x43, 0x78, 0x7B, 0x7E, 0x7F, 0x79
-]
+controller_map = [0x00, 0x20, 0x01, 0x07, 0x0A, 0x0B, 0x5B, 0x5D, 0x40, 0x43, 0x78, 0x7B, 0x7E, 0x7F, 0x79]
 
 # Channel map
 channel_map = [-1] * NUM_CHANNELS
 
+
 def write_time(time: int, midioutput) -> bool:
     global tracksize
+
     buffer = time & 0x7F
-    while (time >>= 7) != 0:
+    shifted_time = time >> 7
+
+    while shifted_time != 0:
         buffer <<= 8
-        buffer |= ((time & 0x7F) | 0x80)
+        buffer |= (shifted_time & 0x7F) | 0x80
+        shifted_time >>= 7
+
     while True:
         writeval = buffer & 0xFF
-        if midioutput.write(struct.pack('B', writeval)) != 1:
+        if midioutput.write(struct.pack("B", writeval)) != 1:
             return True
         tracksize += 1
         if (buffer & 0x80) != 0:
@@ -75,9 +94,10 @@ def write_time(time: int, midioutput) -> bool:
             queuedtime = 0
             return False
 
+
 def write_end_track(midioutput) -> bool:
     global tracksize
-    endtrack = b'\xFF\x2F\x00'
+    endtrack = b"\xff\x2f\x00"
     if write_time(queuedtime, midioutput):
         return True
     if midioutput.write(endtrack) != 3:
@@ -85,89 +105,99 @@ def write_end_track(midioutput) -> bool:
     tracksize += 3
     return False
 
+
 def write_press_key(channel: int, key: int, velocity: int, midioutput) -> bool:
     global tracksize
     working = Midievent.PRESSKEY | channel
     if write_time(queuedtime, midioutput):
         return True
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = key & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = velocity & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     tracksize += 3
     return False
+
 
 def write_release_key(channel: int, key: int, midioutput) -> bool:
     global tracksize
     working = Midievent.RELEASEKEY | channel
     if write_time(queuedtime, midioutput):
         return True
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = key & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = 0
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     tracksize += 3
     return False
 
+
 def write_pitch_wheel(channel: int, wheel: int, midioutput) -> bool:
+    logger.info(f"write_pitch_wheel {channel} {wheel}")
     global tracksize
     working = Midievent.PITCHWHEEL | channel
     if write_time(queuedtime, midioutput):
         return True
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = wheel & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = (wheel >> 7) & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     tracksize += 3
     return False
 
+
 def write_change_patch(channel: int, patch: int, midioutput) -> bool:
+    logger.info(f"write_change_patch {channel} {patch}")
     global tracksize
     working = Midievent.CHANGEPATCH | channel
     if write_time(queuedtime, midioutput):
         return True
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = patch & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     tracksize += 2
     return False
+
 
 def write_change_controller_valued(channel: int, control: int, value: int, midioutput) -> bool:
     global tracksize
     working = Midievent.CHANGECONTROLLER | channel
     if write_time(queuedtime, midioutput):
         return True
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = control & 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     working = value
     if working & 0x80:
         working = 0x7F
-    if midioutput.write(struct.pack('B', working)) != 1:
+    if midioutput.write(struct.pack("B", working)) != 1:
         return True
     tracksize += 3
     return False
 
+
 def write_change_controller_valueless(channel: int, control: int, midioutput) -> bool:
     return write_change_controller_valued(channel, control, 0, midioutput)
 
+
 def allocate_midi_channel() -> int:
+    logger.info("allocate_midi_channel")
     max_channel = -1
     for i in range(NUM_CHANNELS):
         if channel_map[i] > max_channel:
@@ -177,29 +207,33 @@ def allocate_midi_channel() -> int:
         result += 1
     return result
 
+
 def get_midi_channel(mus_channel: int, midioutput) -> int:
     if mus_channel == MUS_PERCUSSION_CHAN:
         return MIDI_PERCUSSION_CHAN
     else:
         if channel_map[mus_channel] == -1:
             channel_map[mus_channel] = allocate_midi_channel()
-            write_change_controller_valueless(channel_map[mus_channel], 0x7b, midioutput)
+            write_change_controller_valueless(channel_map[mus_channel], 0x7B, midioutput)
         return channel_map[mus_channel]
+
 
 def read_mus_header(file) -> MusHeader:
     id = file.read(4)
-    scorelength = struct.unpack('>H', file.read(2))[0]
-    scorestart = struct.unpack('>H', file.read(2))[0]
-    primarychannels = struct.unpack('>H', file.read(2))[0]
-    secondarychannels = struct.unpack('>H', file.read(2))[0]
-    instrumentcount = struct.unpack('>H', file.read(2))[0]
+    scorelength = struct.unpack("<h", file.read(2))[0]
+    scorestart = struct.unpack("<h", file.read(2))[0]
+    primarychannels = struct.unpack("<h", file.read(2))[0]
+    secondarychannels = struct.unpack("<h", file.read(2))[0]
+    instrumentcount = struct.unpack("<h", file.read(2))[0]
     return MusHeader(id, scorelength, scorestart, primarychannels, secondarychannels, instrumentcount)
+
 
 def mus2mid(musinput, midioutput) -> bool:
     global queuedtime, tracksize
     musfileheader = read_mus_header(musinput)
-    if musfileheader.id != b'MUS\x1a':
-        return True
+    logger.info(f"MUS file header: {musfileheader}")
+    if musfileheader.id != b"MUS\x1a":
+        raise ValueError("Not a MUS file")
     musinput.seek(musfileheader.scorestart)
     midioutput.write(midiheader)
     tracksize = 0
@@ -208,7 +242,7 @@ def mus2mid(musinput, midioutput) -> bool:
         while not hitscoreend:
             eventdescriptor = musinput.read(1)
             if not eventdescriptor:
-                return True
+                raise ValueError("No Event descriptor")
             eventdescriptor = eventdescriptor[0]
             channel = get_midi_channel(eventdescriptor & 0x0F, midioutput)
             event = eventdescriptor & 0x70
@@ -262,7 +296,9 @@ def mus2mid(musinput, midioutput) -> bool:
                 else:
                     if controllernumber < 1 or controllernumber > 9:
                         return True
-                    if write_change_controller_valued(channel, controller_map[controllernumber], controllervalue, midioutput):
+                    if write_change_controller_valued(
+                        channel, controller_map[controllernumber], controllervalue, midioutput
+                    ):
                         return True
             elif event == Musevent.SCOREEND:
                 hitscoreend = True
@@ -284,10 +320,11 @@ def mus2mid(musinput, midioutput) -> bool:
     if write_end_track(midioutput):
         return True
     midioutput.seek(18)
-    tracksizebuffer = struct.pack('>I', tracksize)
+    tracksizebuffer = struct.pack(">I", tracksize)
     if midioutput.write(tracksizebuffer) != 4:
         return True
     return False
+
 
 # Example usage:
 # with open('input.mus', 'rb') as musinput, open('output.mid', 'wb') as midioutput:

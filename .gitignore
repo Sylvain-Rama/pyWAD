@@ -175,3 +175,5 @@ WADS/*.WAD
 *.ipynb
 output/*.png
 *.html
+*.mus
+*.mid
