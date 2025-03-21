@@ -55,7 +55,7 @@ controller_map = [0x00, 0x20, 0x01, 0x07, 0x0A, 0x0B, 0x5B, 0x5D, 0x40, 0x43, 0x
 channel_map = [-1] * NUM_CHANNELS
 
 
-def write_time(time: int, midioutput: BinaryIO) -> bool:
+def write_time(time: int, midioutput: BinaryIO) -> None:
     """Writes variable-length encoded time to the MIDI output."""
     global tracksize
     buffer = []
@@ -66,34 +66,31 @@ def write_time(time: int, midioutput: BinaryIO) -> bool:
 
     for byte in buffer:
         if midioutput.write(struct.pack("B", byte)) != 1:
-            return True
+            raise ValueError(f"Failed to write byte {byte} to MIDI output.")
         tracksize += 1
 
     global queuedtime
     queuedtime = 0
-    return False
 
 
-def write_midi_event(event: int, data: list[int], midioutput: BinaryIO) -> bool:
+def write_midi_event(event: int, data: list[int], midioutput: BinaryIO) -> None:
     """Writes a complete MIDI event."""
     global tracksize
-    if write_time(queuedtime, midioutput):
-        return True
+    write_time(queuedtime, midioutput)
+
     midioutput.write(struct.pack("B", event))
     for value in data:
         midioutput.write(struct.pack("B", value & 0x7F))
     tracksize += 1 + len(data)
-    return False
 
 
-def write_end_track(midioutput: BinaryIO) -> bool:
+def write_end_track(midioutput: BinaryIO) -> None:
     """Writes end of track event."""
-    if write_time(queuedtime, midioutput):
-        return True
+    write_time(queuedtime, midioutput)
+
     midioutput.write(b"\xff\x2f\x00")
     global tracksize
     tracksize += 3
-    return False
 
 
 def allocate_midi_channel() -> int:
@@ -121,7 +118,7 @@ def read_mus_header(file: BinaryIO) -> MusHeader:
     return MusHeader(MUS_header, score_len, score_start, channels, sec_channels, instrCnt)
 
 
-def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> bool:
+def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> None:
     """Converts a MUS file to a MIDI file."""
     global queuedtime, tracksize
     musfileheader = read_mus_header(musinput)
@@ -147,20 +144,24 @@ def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> bool:
             if event == Musevent.RELEASEKEY:
                 key = musinput.read(1)[0]
                 write_midi_event(Midievent.RELEASEKEY | channel, [key, 0], midioutput)
+
             elif event == Musevent.PRESSKEY:
                 key = musinput.read(1)[0]
                 if key & 0x80:
                     channelvelocities[channel] = musinput.read(1)[0] & 0x7F
                 write_midi_event(Midievent.PRESSKEY | channel, [key & 0x7F, channelvelocities[channel]], midioutput)
+
             elif event == Musevent.PITCHWHEEL:
                 key = musinput.read(1)[0]
                 write_midi_event(Midievent.PITCHWHEEL | channel, [key * 64 & 0x7F, (key * 64) >> 7], midioutput)
+
             elif event == Musevent.SYSTEMEVENT:
                 controllernumber = musinput.read(1)[0]
                 if 10 <= controllernumber <= 14:
                     write_midi_event(
                         Midievent.CHANGECONTROLLER | channel, [controller_map[controllernumber], 0], midioutput
                     )
+
             elif event == Musevent.CHANGECONTROLLER:
                 controllernumber, controllervalue = musinput.read(2)
                 if controllernumber == 0:
@@ -186,13 +187,11 @@ def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> bool:
                     break
             queuedtime += timedelay
 
-    if write_end_track(midioutput):
-        return True
+    write_end_track(midioutput)
 
     # Write track size
     midioutput.seek(18)
     midioutput.write(struct.pack(">I", tracksize))
-    return False
 
 
 # Example usage:
