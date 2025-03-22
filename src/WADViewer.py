@@ -50,7 +50,7 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
         return fig
 
 
-def draw_tex(wad: WAD_file, tex_name: str, ax=None, scaler: int = 1) -> plt.Figure | None:
+def draw_tex(wad: WAD_file, tex_name: str, scaler: int = 1) -> plt.Figure | None:
     def paste_array(original, paste, x, y):
         """
         Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
@@ -79,16 +79,14 @@ def draw_tex(wad: WAD_file, tex_name: str, ax=None, scaler: int = 1) -> plt.Figu
     texture_data = wad.textures[tex_name]
     pix_width, pix_height = texture_data["width"], texture_data["height"]
 
-    if ax is None:
-        fig, ax = plt.subplots(1, 1, figsize=(pix_width / 100 * scaler, pix_height / 100 * scaler))
-        ax.axis("off")
-        ax.set_aspect("equal")
-        output_fig = True
-
     pixmap = np.zeros((pix_width, pix_height), dtype=np.uint8)
     alphamap = np.zeros((pix_width, pix_height), dtype=np.uint8)
 
     for patch_name, x, y in texture_data["patches"]:
+
+        if patch_name not in wad.lump_names:
+            logger.warning(f"Unknown patch '{patch_name}' in texture '{tex_name}'.")
+            continue
 
         idx = wad.lump_names.index(patch_name)
 
@@ -104,13 +102,11 @@ def draw_tex(wad: WAD_file, tex_name: str, ax=None, scaler: int = 1) -> plt.Figu
     rgb_img = wad.palette[pixmap.T]
 
     rgba_img = rgb_img * alphamap
-    ax.imshow(rgba_img / 255, interpolation="nearest", aspect=1.2)
 
-    if output_fig:
-        return fig
+    return rgba_img
 
 
-def get_music(wad: WAD_file, lump_name: str, output_path: str | None = None) -> None:
+def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) -> None:
 
     if lump_name not in wad.musics.keys():
         raise ValueError(f"Unknown music lump: {lump_name}.")
@@ -193,4 +189,4 @@ if __name__ == "__main__":
         else:
             musics_to_get = [args.music]
         for music_name in musics_to_get:
-            get_music(wad, music_name)
+            save_music(wad, music_name)
