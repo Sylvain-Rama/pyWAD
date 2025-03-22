@@ -50,7 +50,7 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
         return fig
 
 
-def draw_tex(wad: WAD_file, tex_name: str, ax: plt.ax | None = None, scaler: int = 1) -> plt.Figure | None:
+def draw_tex(wad: WAD_file, tex_name: str, ax=None, scaler: int = 1) -> plt.Figure | None:
     def paste_array(original, paste, x, y):
         """
         Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
@@ -112,11 +112,16 @@ def draw_tex(wad: WAD_file, tex_name: str, ax: plt.ax | None = None, scaler: int
 
 def get_music(wad: WAD_file, lump_name: str, output_path: str | None = None) -> None:
 
+    if lump_name not in wad.musics.keys():
+        raise ValueError(f"Unknown music lump: {lump_name}.")
+
     if output_path is None:
         output_path = f"output/{lump_name}.mid"
 
     temp_path = "output/lump.mus"
-    music_lump = wad._lump_data_by_name(lump_name)
+
+    music_lump = wad._lump_data(*wad.musics[lump_name])
+
     with open(temp_path, "wb") as f:
         f.write(music_lump)
 

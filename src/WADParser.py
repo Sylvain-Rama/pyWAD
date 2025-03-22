@@ -49,6 +49,7 @@ class WAD_file:
         self.spritesheets = self._get_spritesheets() if self.sprites else None
 
         self.textures = self._gather_textures()
+        self.musics = self._gather_musics()
 
     def _get_directory(self, bytestring: bytes):
         """Get the directory of the WAD file."""
@@ -348,7 +349,7 @@ class WAD_file:
         tex_lumps = [lump for lump in self.lump_names if TEX_REGEX.match(lump)]
 
         if (len(tex_lumps) == 0) | ("PNAMES" not in self.lump_names):
-            logger.info("No textures found.")
+            logger.info(f"No textures found in this {self.wad_type}.")
             return None
 
         patches = self._parse_patches()
@@ -360,6 +361,19 @@ class WAD_file:
 
         logger.info(f"Found {len(textures)} textures in {len(tex_lumps)} texture lumps.")
         return textures
+
+    def _gather_musics(self):
+        music_lumps = [lump for lump in self.lumps if lump[0].startswith("D_")]
+
+        if len(music_lumps) == 0:
+            logger.info(f"No music found in this {self.wad_type}.")
+            return None
+
+        music_lumps = {k: (offset, size) for k, offset, size in music_lumps}
+
+        logger.info(f"Found {len(music_lumps)} music lumps.")
+
+        return music_lumps
 
 
 def main():
