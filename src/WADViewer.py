@@ -6,6 +6,7 @@ import sys
 import os
 import shutil
 from loguru import logger
+from midi2audio import FluidSynth
 
 sys.path.append("src/")
 
@@ -129,7 +130,6 @@ def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) ->
             musinput.seek(0)
             mus2mid(musinput, midioutput)
             logger.info(f"Exported MUS {lump_name} as a MIDI file.")
-            return
 
     if header_id == MIDI_ID:
 
@@ -138,6 +138,10 @@ def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) ->
 
     else:
         logger.info(f"Lump {lump_name} music format not recognised: {header_id}.")
+
+    fs = FluidSynth("G:\code\pyWAD\media\GeneralUser-GS.sf2")
+    logger.info(output_path)
+    fs.midi_to_audio(output_path, "output/test.wav")
 
     os.remove(temp_path)
 

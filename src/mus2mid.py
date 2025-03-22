@@ -7,7 +7,7 @@ import shutil
 
 """Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
 See https://svn.prboom.org/repos/tags/prboom-plus-2.5.0.1/src/mus2mid.c
-Added MIDI management by simply renaming the MIDI lump to .mid."""
+Added MIDI management by simply saving the MIDI lump to a .mid."""
 
 # Constants
 NUM_CHANNELS = 16

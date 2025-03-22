@@ -177,3 +177,5 @@ output/*.png
 *.html
 *.mus
 *.mid
+# Soundfonts files
+*.sf2
