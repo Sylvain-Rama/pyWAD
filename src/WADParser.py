@@ -42,11 +42,12 @@ class WAD_file:
 
         self.palette = self._get_palette()
         self.maps = self._parse_levels()
+        self.id2sprites = self._parse_things() if self.maps else None
+
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
-        if self.sprites is not None:
-            self.spritesheets = self._get_spritesheets()
-        self.id2sprites = self._parse_things()
+        self.spritesheets = self._get_spritesheets() if self.sprites else None
+
         self.textures = self._gather_textures()
 
     def _get_directory(self, bytestring: bytes):
@@ -149,7 +150,7 @@ class WAD_file:
                     lump_id = name_subset.index(map_attr)
                     map_dict[map_name][map_attr] = lump_subset[lump_id][1:]
 
-        logger.info(f"{len(maps_idx)} levels found in this WAD.")
+        logger.info(f"Found {len(maps_idx)} level(s) in this WAD.")
         return map_dict
 
     def _parse_by_markers(
