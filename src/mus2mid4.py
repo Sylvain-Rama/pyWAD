@@ -192,8 +192,3 @@ def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> None:
     # Write track size
     midioutput.seek(18)
     midioutput.write(struct.pack(">I", tracksize))
-
-
-# Example usage:
-# with open('input.mus', 'rb') as musinput, open('output.mid', 'wb') as midioutput:
-#     mus2mid(musinput, midioutput)

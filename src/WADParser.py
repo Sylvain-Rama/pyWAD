@@ -50,32 +50,16 @@ class WAD_file:
 
     def _get_directory(self, bytestring: bytes):
         """Get the directory of the WAD file."""
-        name, dir_size, dir_offset = struct.unpack("<4sII", bytestring.read(12))
-        name = name.decode("ascii")
-        if name in ["IWAD", "PWAD"]:
+        wad_type, dir_size, dir_offset = struct.unpack("<4sII", bytestring.read(12))
+        wad_type = wad_type.decode("ascii")
+        if wad_type in ["IWAD", "PWAD"]:
             self.dir_size = dir_size
             self.dir_offset = dir_offset
-            self.wad_type = name
+            self.wad_type = wad_type
             self.wad = bytestring
         else:
             bytestring = "None"
             raise TypeError("This is not a WAD file.")
-
-    def is_wad(self, path: str) -> bool:
-        """Check if the file is a WAD file."""
-        with open(path, "rb") as opened_file:
-
-            name, dir_size, dir_offset = struct.unpack("<4sII", opened_file.read(12))
-            name = name.decode("ascii")
-            if name in ["IWAD", "PWAD"]:
-                self.dir_size = dir_size
-                self.dir_offset = dir_offset
-                self.wad_path = path
-                self.wad_type = name
-
-                return True
-
-            return False
 
     def _get_lumps(self) -> list[tuple[str, int, int]]:
         """Get the list of lumps in the WAD file."""
@@ -98,11 +82,11 @@ class WAD_file:
 
         return lumps
 
-    def _lump_data(self, offset, size):
+    def _lump_data(self, offset: int, size: int) -> bytes:
         self.wad.seek(offset)
         return self.wad.read(size)
 
-    def _lump_data_by_name(self, lump_name: str):
+    def _lump_data_by_name(self, lump_name: str) -> bytes:
         if lump_name not in self.lump_names:
             raise ValueError(f"Unknown lump: {lump_name}.")
         else:
