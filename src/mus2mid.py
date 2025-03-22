@@ -193,21 +193,3 @@ def mus2mid(musinput: BinaryIO, midioutput: BinaryIO) -> None:
     # Write track size
     midioutput.seek(18)
     midioutput.write(struct.pack(">I", tracksize))
-
-
-def get_music(file_input: str, file_output: str):
-    with open(file_input, "rb") as musinput, open(file_output, "wb") as midioutput:
-        header_id = struct.unpack("<4s", musinput.read(4))[0]
-
-        if header_id == MUS_ID:
-            logger.info("MUS file")
-            musinput.seek(0)
-            mus2mid(musinput, midioutput)
-            return
-
-    if header_id == MIDI_ID:
-        logger.info("MIDI file")
-        shutil.copy(file_input, file_output)
-
-    else:
-        logger.info(f"Music format not recognised: {header_id}.")

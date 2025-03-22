@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+import struct
 import sys
+import os
 import shutil
 from loguru import logger
 
@@ -9,6 +11,7 @@ sys.path.append("src/")
 
 from WADParser import WAD_file, open_wad_file
 from palettes import MAP_CMAPS
+from mus2mid import mus2mid, MUS_ID, MIDI_ID
 
 
 def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
@@ -47,7 +50,7 @@ def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
         return fig
 
 
-def draw_tex(wad, tex_name, ax=None, scaler=1):
+def draw_tex(wad: WAD_file, tex_name: str, ax: plt.ax | None = None, scaler: int = 1) -> plt.Figure | None:
     def paste_array(original, paste, x, y):
         """
         Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
@@ -107,16 +110,53 @@ def draw_tex(wad, tex_name, ax=None, scaler=1):
         return fig
 
 
+def get_music(wad: WAD_file, lump_name: str, output_path: str | None = None) -> None:
+
+    if output_path is None:
+        output_path = f"output/{lump_name}.mid"
+
+    temp_path = "output/lump.mus"
+    music_lump = wad._lump_data_by_name(lump_name)
+    with open(temp_path, "wb") as f:
+        f.write(music_lump)
+
+    with open(temp_path, "rb") as musinput, open(output_path, "wb") as midioutput:
+        header_id = struct.unpack("<4s", musinput.read(4))[0]
+
+        if header_id == MUS_ID:
+
+            musinput.seek(0)
+            mus2mid(musinput, midioutput)
+            logger.info(f"Exported MUS {lump_name} as a MIDI file.")
+            return
+
+    if header_id == MIDI_ID:
+
+        shutil.copy(temp_path, output_path)
+        logger.info(f"Exported {lump_name} as a MIDI file.")
+
+    else:
+        logger.info(f"Lump {lump_name} music format not recognised: {header_id}.")
+
+    os.remove(temp_path)
+
+
 if __name__ == "__main__":
 
     args = argparse.ArgumentParser()
     args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.wad")
     args.add_argument(
-        "--command", "-c", type=str, help="Command to run", choices=["draw_map", "draw_tex"], default="draw_map"
+        "--command",
+        "-c",
+        type=str,
+        help="Command to run",
+        choices=["draw_map", "draw_tex", "get_music"],
+        default="draw_map",
     )
     args.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
     args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
     args.add_argument("--texture", "-t", type=str, help="Texture name", default="AASTINKY")
+    args.add_argument("--music", "-mu", type=str, help="Music lump name", default="D_E1M1")
 
     args = args.parse_args()
     wad = open_wad_file(args.wad)
@@ -141,3 +181,11 @@ if __name__ == "__main__":
         for texture_name in textures_to_draw:
             fig = draw_tex(wad, texture_name)
             fig.savefig(f"output/{texture_name}.png", bbox_inches="tight", dpi=300)
+
+    elif args.command == "get_music":
+        if args.music == "*":
+            musics_to_get = wad.musics.keys()
+        else:
+            musics_to_get = [args.music]
+        for music_name in musics_to_get:
+            get_music(wad, music_name)
