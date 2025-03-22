@@ -44,7 +44,8 @@ class WAD_file:
         self.maps = self._parse_levels()
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
-        self.spritesheets = self._get_spritesheets()
+        if self.sprites is not None:
+            self.spritesheets = self._get_spritesheets()
         self.id2sprites = self._parse_things()
         self.textures = self._gather_textures()
 
