@@ -136,12 +136,12 @@ def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) ->
         shutil.copy(temp_path, output_path)
         logger.info(f"Exported {lump_name} as a MIDI file.")
 
-    else:
+    elif header_id != MUS_ID:
         logger.info(f"Lump {lump_name} music format not recognised: {header_id}.")
 
-    fs = FluidSynth("G:\code\pyWAD\media\GeneralUser-GS.sf2")
-    logger.info(output_path)
-    fs.midi_to_audio(output_path, "output/test.wav")
+    # fs = FluidSynth("G:\code\pyWAD\media\GeneralUser-GS.sf2")
+    # logger.info(output_path)
+    # fs.midi_to_audio(output_path, "output/test.wav")
 
     os.remove(temp_path)
 
@@ -149,7 +149,7 @@ def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) ->
 if __name__ == "__main__":
 
     args = argparse.ArgumentParser()
-    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.wad")
+    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM2.wad")
     args.add_argument(
         "--command",
         "-c",
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     args.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
     args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
     args.add_argument("--texture", "-t", type=str, help="Texture name", default="AASTINKY")
-    args.add_argument("--music", "-mu", type=str, help="Music lump name", default="D_E1M1")
+    args.add_argument("--music", "-mu", type=str, help="Music lump name", default="D_MAP01")
 
     args = args.parse_args()
     wad = open_wad_file(args.wad)

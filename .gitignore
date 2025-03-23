@@ -179,3 +179,5 @@ output/*.png
 *.mid
 # Soundfonts files
 *.sf2
+test*.*
+
