@@ -18,6 +18,7 @@ class MIDIPlayer:
     def __init__(self, file_path):
         self.file_path = file_path
         self.stop_flag = False
+        self.loop_flag = False
         try:
             winmm = ctypes.WinDLL("winmm.dll")
             self.mciSendString = winmm.mciSendStringW
@@ -31,6 +32,7 @@ class MIDIPlayer:
 
     def play_midi(self):
         logger.info(f"Playing MIDI file: {self.file_path}")
+
         self.stop_flag = False
         self.mci_send(f'open "{self.file_path}" type sequencer alias midi')
         self.mci_send("play midi")
@@ -38,12 +40,13 @@ class MIDIPlayer:
         # Wait until playback finishes or stop is requested
         while self.mci_send("status midi mode") == "playing":
             if self.stop_flag:
+                logger.info("Stopped by user")
                 self.stop_midi()
                 break
-            time.sleep(0.5)
 
         # Stop normally if not interrupted
         if not self.stop_flag:
+            logger.info("Stopped at the end")
             self.stop_midi()
 
     def stop_midi(self):
@@ -57,7 +60,8 @@ class MIDIPlayer:
         self.mci_send("reset midi")  # Reset MIDI alias to avoid conflicts
 
     # Start playing MIDI in a separate thread
-    def play(self):
+    def play(self, loop_flag=False):
+        self.loop_flag = loop_flag
         threading.Thread(target=self.play_midi, daemon=True).start()
 
     # Stop playback
