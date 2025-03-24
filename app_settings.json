@@ -1,0 +1,8 @@
+{
+    "output_folder": "output",
+    "output_map_format": "png",
+    "output_tex_format": "png",
+    "app_theme": "dark",
+    "reset_output_folder": true
+
+}
