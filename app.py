@@ -63,10 +63,11 @@ elif page == "Textures":
     textures = st.session_state["wad"].textures.keys()
     texture_list = []
     captions = []
-    for texture_name in textures:
-        rgb_image = draw_tex(st.session_state["wad"], texture_name) / 255
-        texture_list.append(rgb_image)
-        captions.append(texture_name)
+    with st.spinner("Drawing textures..."):
+        for texture_name in textures:
+            rgb_image = draw_tex(st.session_state["wad"], texture_name) / 255
+            texture_list.append(rgb_image)
+            captions.append(texture_name)
 
     st.image(texture_list, caption=captions, output_format="PNG")
 
@@ -75,11 +76,12 @@ elif page == "Musics":
     music_names = list(st.session_state["wad"].musics.keys())
 
     chosen_music = st.selectbox("Music", music_names)
-    st.session_state["current_music"] = chosen_music
+
     if f"{chosen_music}.mid" not in os.listdir("output"):
         save_music(st.session_state["wad"], chosen_music)
 
     # Create the player if it's not created yet or if the music is changed
+    # to do: check if playing, if yes stop.
     if st.session_state["player"] is None or st.session_state["current_music"] != chosen_music:
         st.session_state["player"] = MIDIPlayer(f"output/{chosen_music}.mid")
         st.session_state["current_music"] = chosen_music

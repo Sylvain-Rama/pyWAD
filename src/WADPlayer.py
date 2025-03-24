@@ -52,6 +52,9 @@ class MIDIPlayer:
             logger.info("Stopped at the end")
             self.stop_midi()
 
+    def is_playing(self):
+        return self.mci_send("status midi mode") == "playing"
+
     def stop_midi(self):
         logger.info("Stopping MIDI playback")
         self.stop_flag = True
