@@ -18,12 +18,15 @@ class MIDIPlayer:
     def __init__(self, file_path):
         self.file_path = file_path
         self.stop_flag = False
-        self.loop_flag = False
+
         try:
             winmm = ctypes.WinDLL("winmm.dll")
             self.mciSendString = winmm.mciSendStringW
         except AttributeError:
             raise ImportError("winmm.dll not found. This player only works on Windows.")
+
+    def __repr__(self):
+        return f"MIDIPlayer(file_path={self.file_path}, stop_flag={self.stop_flag})."
 
     def mci_send(self, command):
         buffer = ctypes.create_unicode_buffer(256)
