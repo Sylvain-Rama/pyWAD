@@ -5,6 +5,7 @@ from loguru import logger
 from src.WADParser import WAD_file
 from src.WADViewer import draw_map, draw_tex, save_music
 from src.WADPlayer import MIDIPlayer
+from src.palettes import MAP_CMAPS
 
 
 st.set_page_config(
@@ -41,7 +42,7 @@ elif page == "Maps":
     with col1:
         chosen_map = st.selectbox("Map", st.session_state["wad"].maps.keys())
     with col2:
-        palette = st.selectbox("Palette", ["OMGIFOL", "DOOM", "HERETIC"])
+        palette = st.selectbox("Palette", list(MAP_CMAPS.keys()), index=1)
     with col3:
         things = st.selectbox("Things", ["None", "Dots"])
         # show_secrets = st.checkbox("Show Secrets")
@@ -82,7 +83,12 @@ elif page == "Musics":
 
     # Create the player if it's not created yet or if the music is changed
     # to do: check if playing, if yes stop.
-    if st.session_state["player"] is None or st.session_state["current_music"] != chosen_music:
+    if st.session_state["player"] is None:
+        st.session_state["player"] = MIDIPlayer(f"output/{chosen_music}.mid")
+        st.session_state["current_music"] = chosen_music
+
+    if st.session_state["current_music"] != chosen_music:
+        st.session_state["player"].stop()
         st.session_state["player"] = MIDIPlayer(f"output/{chosen_music}.mid")
         st.session_state["current_music"] = chosen_music
 

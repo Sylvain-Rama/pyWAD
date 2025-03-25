@@ -56,7 +56,7 @@ MAP_CMAPS = {
         "background": [0, 0, 0],
         "block": [255, 0, 0],
         "2-sided": [255, 255, 0],
-        "secret": [255, 0, 255],
+        "secret": [255, 19, 255],
     },
     "OMGIFOL": {
         "background": [255, 255, 255],
@@ -64,10 +64,10 @@ MAP_CMAPS = {
         "2-sided": [128, 128, 128],
         "secret": [255, 0, 255],
     },
-    "HERETIC": {
-        "background": [0, 0, 0],
-        "block": [255, 0, 0],
-        "2-sided": [255, 255, 0],
-        "secret": [255, 0, 255],
+    "GZDOOM": {
+        "background": [127, 103, 83],
+        "block": [63, 43, 27],
+        "2-sided": [155, 131, 107],
+        "secret": [255, 19, 255],
     },
 }
