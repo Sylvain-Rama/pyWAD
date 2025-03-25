@@ -6,7 +6,6 @@ import sys
 import os
 import shutil
 from loguru import logger
-from midi2audio import FluidSynth
 
 sys.path.append("src/")
 

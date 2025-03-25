@@ -27,10 +27,10 @@ if "player" not in st.session_state:
 with st.sidebar:
     st.header("WAD Viewer")
     page = st.radio("Go to", ["Flats", "Maps", "Musics", "Sprites", "Textures"])
-
-    uploaded_file = st.file_uploader("Choose a file")
-    if uploaded_file is not None:
-        st.session_state["wad"] = WAD_file(uploaded_file)
+    if st.session_state["wad"] is None:
+        uploaded_file = st.file_uploader("Choose a file")
+        if uploaded_file is not None:
+            st.session_state["wad"] = WAD_file(uploaded_file)
 
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")
