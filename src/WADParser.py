@@ -136,16 +136,16 @@ class WAD_file:
             if not maps_idx:
                 logger.info("No levels found in this WAD.")
                 return None
-
+        n_map_lumps = len(MAPS_ATTRS[self.game_type])
         map_dict = {}
         for map_id in maps_idx:
-            lump_subset = self.lumps[map_id + 1 : map_id + len(MAPS_ATTRS) + 1]
-            name_subset = self.lump_names[map_id + 1 : map_id + len(MAPS_ATTRS) + 1]
+            lump_subset = self.lumps[map_id + 1 : map_id + n_map_lumps + 1]
+            name_subset = self.lump_names[map_id + 1 : map_id + n_map_lumps + 1]
 
             map_name = self.lump_names[map_id]
             map_dict[map_name] = {}
 
-            for map_attr in MAPS_ATTRS:
+            for map_attr in MAPS_ATTRS[self.game_type]:
                 if map_attr not in name_subset:
                     logger.warning(f"{map_name} does not have {map_attr} lump.")
 
@@ -201,18 +201,6 @@ class WAD_file:
             res[name] = sorted(res[name], key=lambda x: x[0])
 
         return res
-
-    def draw_flat(self, offset: int, size: int) -> np.ndarray:
-        if size != 4096:
-            raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
-
-        self.wad.seek(offset)
-        flat = self.wad.read(size)
-
-        indices = np.array(struct.unpack("4096B", flat), dtype=np.uint8).reshape((64, 64))  # 8-bit index array
-        rgb_image = self.palette[indices]
-
-        return rgb_image
 
     def _read_patch_data(self, offset: int, size: int, flip=False) -> np.ndarray:
         # See https://doomwiki.org/wiki/Picture_format for documentation
