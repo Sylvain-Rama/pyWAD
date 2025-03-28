@@ -41,8 +41,10 @@ class WAD_file:
         logger.info(f"Found a {self.game_type} {self.wad_type}.")
 
         self.palette = self._get_palette()
-        self.maps = self._parse_levels()
-        self.id2sprites = self._parse_things() if self.maps else None
+        self._maps_lumps = self._parse_levels()
+        if self._maps_lumps is not None:
+            self.id2sprites = self._parse_things()
+            self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
 
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
@@ -261,11 +263,11 @@ class WAD_file:
 
         return rgba_img
 
-    def map(self, map_name: str):
+    def _parse_map(self, map_name: str):
         map_info = defaultdict(list)
         metadata = {}
 
-        lump = self._lump_data(*self.maps[map_name]["VERTEXES"])
+        lump = self._lump_data(*self._maps_lumps[map_name]["VERTEXES"])
         vertices = np.array([struct.unpack("<hh", lump[i : i + 4]) for i in range(0, len(lump), 4)])
 
         map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
@@ -273,7 +275,7 @@ class WAD_file:
         metadata["map_size"] = (map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
         metadata["map_name"] = map_name
 
-        lump = self._lump_data(*self.maps[map_name]["LINEDEFS"])
+        lump = self._lump_data(*self._maps_lumps[map_name]["LINEDEFS"])
         linedefs = np.array([struct.unpack("<hhhhhhh", lump[i : i + 14]) for i in range(0, len(lump), 14)])
         linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
 
@@ -288,7 +290,7 @@ class WAD_file:
             elif flag & 0x04:  # Two-sided, can see through
                 map_info["steps"].append(line)
 
-        lump = self._lump_data(*self.maps[map_name]["THINGS"])
+        lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
 
         things_dict = defaultdict(list)

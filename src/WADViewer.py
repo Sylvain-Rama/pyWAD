@@ -9,107 +9,148 @@ from loguru import logger
 
 sys.path.append("src/")
 
-from WADParser import WAD_file, open_wad_file
+import WADParser
 from palettes import MAP_CMAPS
 from mus2mid import mus2mid, MUS_ID, MIDI_ID
 
 
-def draw_map(map_data, palette="OMGIFOL", ax=None, scaler=1, show_secret=True):
-    if ax is None:
-        width, height = map_data["metadata"]["map_size"]
-        wh_ratio = width / height
+class WadViewer:
+    def __init__(self, wad: WADParser.WAD_file):
+        if not isinstance(wad, WADParser.WAD_file):
+            raise TypeError(f"WadViewer expects a WAD_file object, got {type(wad)}.")
+        self.wad = wad
 
-        fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio))
+    def draw_flat(self, patch_name: str, ax=None):
+        output_fig = False
+        if patch_name not in self.wad.flats.keys():
+            raise ValueError(f"Patch {patch_name} not found in this WAD.")
 
-        output_fig = True
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(4, 4))
+            output_fig = True
 
-    cmap = MAP_CMAPS[palette]
+        offset, size = self.wad.flats[patch_name]
+        if size != 4096:
+            raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
 
-    bckgrd_color = [x / 255 for x in cmap["background"]]
+        self.wad.wad.seek(offset)
+        flat = self.wad.wad.read(size)
 
-    ax.set_facecolor(bckgrd_color)
-    fig.patch.set_facecolor(bckgrd_color)
+        indices = np.array(struct.unpack("4096B", flat), dtype=np.uint8).reshape((64, 64))  # 8-bit index array
+        rgb_image = self.wad.palette[indices]
 
-    step_color = [x / 255 for x in cmap["2-sided"]]
-    for line in map_data["steps"]:
-        ax.plot(line[:, 0], line[:, 1], color=step_color, linewidth=0.6)
+        ax.imshow(rgb_image / 255, interpolation="nearest")
+        ax.axis("off")
 
-    block_color = [x / 255 for x in cmap["block"]]
-    for line in map_data["walls"]:
-        ax.plot(line[:, 0], line[:, 1], color=block_color, linewidth=0.6)
+        if output_fig:
+            fig.suptitle(patch_name)
+            fig.tight_layout(pad=1.2)
+            return fig
 
-    if show_secret:
-        secret_color = [x / 255 for x in cmap["secret"]]
-        for line in map_data["secret"]:
+    def draw_map(self, map_name, palette: str = "OMGIFOL", ax=None, scaler: float = 1, show_secret: bool = True):
+        if map_name not in self.wad.maps.keys():
+            raise ValueError(f"Map {map_name} not found in this WAD.")
+        map_data = self.wad.maps[map_name]
+        output_fig = False
+
+        if ax is None:
+            width, height = map_data["metadata"]["map_size"]
+            wh_ratio = width / height
+
+            fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio))
+
+            output_fig = True
+
+        cmap = MAP_CMAPS[palette]
+
+        bckgrd_color = [x / 255 for x in cmap["background"]]
+
+        ax.set_facecolor(bckgrd_color)
+        if output_fig:
+            fig.patch.set_facecolor(bckgrd_color)
+
+        step_color = [x / 255 for x in cmap["2-sided"]]
+        for line in map_data["steps"]:
+            ax.plot(line[:, 0], line[:, 1], color=step_color, linewidth=0.6)
+
+        block_color = [x / 255 for x in cmap["block"]]
+        for line in map_data["walls"]:
             ax.plot(line[:, 0], line[:, 1], color=block_color, linewidth=0.6)
 
-    ax.axis("equal")
-    ax.axis("off")
+        if show_secret:
+            secret_color = [x / 255 for x in cmap["secret"]]
+            for line in map_data["secret"]:
+                ax.plot(line[:, 0], line[:, 1], color=block_color, linewidth=0.6)
 
-    logger.info(f'Plotted map {map_data["metadata"]["map_name"]}.')
+        ax.axis("equal")
+        ax.axis("off")
 
-    if output_fig:
-        fig.tight_layout(pad=0.2)
-        return fig
+        logger.info(f'Plotted map {map_data["metadata"]["map_name"]}.')
+
+        if output_fig:
+            fig.tight_layout(pad=0.2)
+            return fig
+
+    def draw_tex(self, tex_name: str, scaler: int = 1) -> plt.Figure | None:
+        def paste_array(original, paste, x, y):
+            """
+            Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
+            Allows for negative x and y values.
+            I miss Labview paste-and-forget function :'(
+            """
+            orig_h, orig_w = original.shape
+            paste_h, paste_w = paste.shape
+
+            # Valid region in the original array
+            x_start = max(x, 0)
+            y_start = max(y, 0)
+            x_end = min(x + paste_w, orig_w)
+            y_end = min(y + paste_h, orig_h)
+
+            # Corresponding region in the paste array
+            paste_x_start = max(-x, 0)
+            paste_y_start = max(-y, 0)
+            paste_x_end = paste_x_start + (x_end - x_start)
+            paste_y_end = paste_y_start + (y_end - y_start)
+
+            original[y_start:y_end, x_start:x_end] = paste[paste_y_start:paste_y_end, paste_x_start:paste_x_end]
+
+            return original
+
+        if tex_name not in self.wad.textures.keys():
+            raise ValueError(f"Texture {tex_name} not found in WAD.")
+
+        texture_data = self.wad.textures[tex_name]
+        pix_width, pix_height = texture_data["width"], texture_data["height"]
+
+        pixmap = np.zeros((pix_width, pix_height), dtype=np.uint8)
+        alphamap = np.zeros((pix_width, pix_height), dtype=np.uint8)
+
+        for patch_name, x, y in texture_data["patches"]:
+
+            if patch_name not in self.wad.lump_names:
+                logger.warning(f"Unknown patch '{patch_name}' in texture '{tex_name}'.")
+                continue
+
+            idx = self.wad.lump_names.index(patch_name)
+
+            _, offset, size = self.wad.lumps[idx]
+            img, alpha, _, _ = self.wad._read_patch_data(offset, size)
+
+            # x and y are flipped as the image will be transposed after
+            pixmap = paste_array(pixmap, img, y, x)
+            alphamap = paste_array(alphamap, alpha, y, x)
+
+        alphamap = alphamap.T[:, :, np.newaxis] * np.ones((1, 1, 4))
+
+        rgb_img = wad.palette[pixmap.T]
+
+        rgba_img = rgb_img * alphamap
+
+        return rgba_img
 
 
-def draw_tex(wad: WAD_file, tex_name: str, scaler: int = 1) -> plt.Figure | None:
-    def paste_array(original, paste, x, y):
-        """
-        Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
-        Allows for negative x and y values.
-        I miss Labview paste-and-forget function :'(
-        """
-        orig_h, orig_w = original.shape
-        paste_h, paste_w = paste.shape
-
-        # Valid region in the original array
-        x_start = max(x, 0)
-        y_start = max(y, 0)
-        x_end = min(x + paste_w, orig_w)
-        y_end = min(y + paste_h, orig_h)
-
-        # Corresponding region in the paste array
-        paste_x_start = max(-x, 0)
-        paste_y_start = max(-y, 0)
-        paste_x_end = paste_x_start + (x_end - x_start)
-        paste_y_end = paste_y_start + (y_end - y_start)
-
-        original[y_start:y_end, x_start:x_end] = paste[paste_y_start:paste_y_end, paste_x_start:paste_x_end]
-
-        return original
-
-    texture_data = wad.textures[tex_name]
-    pix_width, pix_height = texture_data["width"], texture_data["height"]
-
-    pixmap = np.zeros((pix_width, pix_height), dtype=np.uint8)
-    alphamap = np.zeros((pix_width, pix_height), dtype=np.uint8)
-
-    for patch_name, x, y in texture_data["patches"]:
-
-        if patch_name not in wad.lump_names:
-            logger.warning(f"Unknown patch '{patch_name}' in texture '{tex_name}'.")
-            continue
-
-        idx = wad.lump_names.index(patch_name)
-
-        _, offset, size = wad.lumps[idx]
-        img, alpha, _, _ = wad._read_patch_data(offset, size)
-
-        # x and y are flipped as the image will be transposed after
-        pixmap = paste_array(pixmap, img, y, x)
-        alphamap = paste_array(alphamap, alpha, y, x)
-
-    alphamap = alphamap.T[:, :, np.newaxis] * np.ones((1, 1, 4))
-
-    rgb_img = wad.palette[pixmap.T]
-
-    rgba_img = rgb_img * alphamap
-
-    return rgba_img
-
-
-def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) -> None:
+def save_music(wad: WADParser.WAD_file, lump_name: str, output_path: str | None = None) -> None:
 
     if lump_name not in wad.musics.keys():
         raise ValueError(f"Unknown music lump: {lump_name}.")
@@ -136,14 +177,10 @@ def save_music(wad: WAD_file, lump_name: str, output_path: str | None = None) ->
     if header_id == MIDI_ID:
 
         shutil.copy(temp_path, output_path)
-        logger.info(f"Exported {lump_name} as a MIDI file.")
+        logger.info(f"Saved MIDI {lump_name} as a MIDI file.")
 
     elif header_id != MUS_ID:
         logger.info(f"Lump {lump_name} music format not recognised: {header_id}.")
-
-    # fs = FluidSynth("G:\code\pyWAD\media\GeneralUser-GS.sf2")
-    # logger.info(output_path)
-    # fs.midi_to_audio(output_path, "output/test.wav")
 
     os.remove(temp_path)
 
