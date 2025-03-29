@@ -59,6 +59,37 @@ controller_map = [0x00, 0x20, 0x01, 0x07, 0x0A, 0x0B, 0x5B, 0x5D, 0x40, 0x43, 0x
 channel_map = [-1] * NUM_CHANNELS
 
 
+class Mus2Mid:
+    def __init__(self, mus_path: str) -> None:
+        self.mus_path = mus_path
+
+        with open(mus_path, "rb") as musinput:
+            header_id = struct.unpack("<4s", musinput.read(4))[0]
+            self.musinput = musinput
+            self.musinput.seek(0)
+            self.id = header_id
+
+            if header_id not in [MUS_ID, MIDI_ID]:
+                raise ValueError(f"Unsupported file format: {header_id}")
+            else:
+                logger.info(f"File format: {header_id}")
+
+    def read_mus_header(self) -> MusHeader:
+        """Reads and returns a MUS file header."""
+        MUS_header, score_len, score_start, channels, sec_channels, instrCnt, _ = struct.unpack(
+            "<4sHHHHHH", self.musfile.read(16)
+        )
+        return MusHeader(MUS_header, score_len, score_start, channels, sec_channels, instrCnt)
+
+    def to_midi(self) -> None:
+        """Converts a MUS file to MIDI format."""
+        musfileheader = self.read_mus_header()
+        self.musinput.seek(musfileheader.scorestart)
+        self.midioutput.write(midiheader)
+        self.tracksize = 0
+        self.hitscoreend = False
+
+
 def write_time(time: int, midioutput: BinaryIO) -> None:
     """Writes variable-length encoded time to the MIDI output."""
     global tracksize
