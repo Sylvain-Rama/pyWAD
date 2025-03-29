@@ -365,6 +365,18 @@ class WAD_file:
 
         return music_lumps
 
+    def save_mus(self, music_name, output_path=None):
+        if music_name not in self.musics.keys():
+            raise ValueError(f"Music {music_name} not found in this {self.wad_type}.")
+        if output_path is None:
+            output_path = "output/" + music_name + ".mus"
+
+        offset, size = self.musics[music_name]
+        self.wad.seek(offset)
+        with open(output_path, "wb") as f:
+            f.write(self.wad.read(size))
+        logger.info(f"Saved music {music_name} to {output_path}.")
+
 
 def main():
     parsed_wad = open_wad_file("WADs/DOOM2.WAD")
