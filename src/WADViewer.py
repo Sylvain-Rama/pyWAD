@@ -135,7 +135,7 @@ class WadViewer:
             idx = self.wad.lump_names.index(patch_name)
 
             _, offset, size = self.wad.lumps[idx]
-            img, alpha, _, _ = self.wad._read_patch_data(offset, size)
+            img, alpha, _, _ = self._read_patch_data(offset, size)
 
             # x and y are flipped as the image will be transposed after
             pixmap = paste_array(pixmap, img, y, x)
@@ -146,6 +146,62 @@ class WadViewer:
         rgb_img = wad.palette[pixmap.T]
 
         rgba_img = rgb_img * alphamap
+
+        return rgba_img
+
+    def _read_patch_data(self, offset: int, size: int) -> np.ndarray:
+        # See https://doomwiki.org/wiki/Picture_format for documentation
+
+        self.wad.wad.seek(offset)
+
+        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.wad.wad.read(8))
+
+        column_offsets = [struct.unpack("<I", self.wad.wad.read(4))[0] for _ in range(width)]
+
+        image_data = np.zeros((width, height), dtype=np.uint8)
+        image_alpha = np.zeros((width, height), dtype=np.uint8)
+
+        for i in range(width):
+
+            inner_offset = column_offsets[i] + offset
+            self.wad.wad.seek(inner_offset)  # Move to column start
+
+            while True:
+                row_start = struct.unpack("<B", self.wad.wad.read(1))[0]  # Read row start
+                if row_start == 0xFF:
+                    break  # End of column
+
+                pixel_count = ord(self.wad.wad.read(1))
+                _ = self.wad.wad.read(1)  # Skip unused byte
+
+                pixels = list(self.wad.wad.read(pixel_count))
+                _ = self.wad.wad.read(1)  # Skip column termination byte
+
+                image_data[i, row_start : row_start + pixel_count] = pixels
+                image_alpha[i, row_start : row_start + pixel_count] = 1
+
+        return image_data, image_alpha, left_offset, top_offset
+
+    def draw_patch(self, offset, size):
+
+        img_data, alpha, left, top = self._read_patch_data(offset, size)
+
+        alpha = alpha.T[:, :, np.newaxis] * np.ones((1, 1, 4))
+        rgb_img = self.wad.palette[img_data.T]
+        rgba_img = rgb_img * alpha
+
+        return rgba_img
+
+    def draw_sprite(self, sprite_name, ax=None):
+        """Method to draw a single patch, with alpha channel."""
+        if sprite_name not in self.wad.sprites.keys():
+            raise ValueError(f"Unknown patch name {sprite_name} in this WAD.")
+
+        img_data, alpha, _, _ = self._read_patch_data(*self.wad.sprites[sprite_name])
+
+        alpha = alpha.T[:, :, np.newaxis] * np.ones((1, 1, 4))
+        rgb_img = self.wad.palette[img_data.T]
+        rgba_img = rgb_img * alpha
 
         return rgba_img
 
