@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import BinaryIO
 from loguru import logger
-import shutil
+
 
 """Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
 See https://svn.prboom.org/repos/tags/prboom-plus-2.5.0.1/src/mus2mid.c
@@ -69,7 +69,7 @@ class Mus2Mid:
                 self.mus_path = mus_path
                 logger.info(f"File format: {header_id}")
 
-    def read_mus_header(musfile: BinaryIO) -> MusHeader:
+    def read_mus_header(self, musfile: BinaryIO) -> MusHeader:
         """Reads and returns a MUS file header."""
         MUS_header, score_len, score_start, channels, sec_channels, instrCnt, _ = struct.unpack(
             "<4sHHHHHH", musfile.read(16)
@@ -140,7 +140,7 @@ class Mus2Mid:
     def mus2mid(self, musinput: BinaryIO, midioutput: BinaryIO) -> None:
         """Converts a MUS file to MIDI format."""
 
-        musfileheader = self.read_mus_header()
+        musfileheader = self.read_mus_header(musinput)
 
         musinput.seek(musfileheader.scorestart)
         midioutput.write(midiheader)
