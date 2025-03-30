@@ -213,8 +213,14 @@ class Mus2Mid:
 
         # Write track size
         midioutput.seek(18)
-        midioutput.write(struct.pack("<I", tracksize))
-        logger.info("Track size written.")
+        midioutput.write(struct.pack("<I", self.tracksize))
+        logger.info(f"Track size written: {self.tracksize} vs {musfileheader.scorelength}")
+
+    def to_midi(self, output_path: str) -> None:
+        with open(self.mus_path, "rb") as musinput, open(output_path, "wb") as midioutput:
+
+            self.mus2mid(musinput, midioutput)
+            logger.info(f"Exported MUS {self.mus_path} as a MIDI file to {output_path}.")
 
 
 def write_time(time: int, midioutput: BinaryIO) -> None:
