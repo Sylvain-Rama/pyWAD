@@ -11,7 +11,6 @@ sys.path.append("src/")
 
 import WADParser
 from palettes import MAP_CMAPS
-from mus2mid import mus2mid, MUS_ID, MIDI_ID
 
 
 class WadViewer:

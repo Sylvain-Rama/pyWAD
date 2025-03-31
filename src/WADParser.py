@@ -202,55 +202,6 @@ class WAD_file:
 
         return res
 
-    def _read_patch_data(self, offset: int, size: int, flip=False) -> np.ndarray:
-        # See https://doomwiki.org/wiki/Picture_format for documentation
-
-        self.bytes.seek(offset)
-
-        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.bytes.read(8))
-
-        column_offsets = [struct.unpack("<I", self.bytes.read(4))[0] for _ in range(width)]
-
-        image_data = np.zeros((width, height), dtype=np.uint8)
-        image_alpha = np.zeros((width, height), dtype=np.uint8)
-
-        for i in range(width):
-
-            inner_offset = column_offsets[i] + offset
-            self.bytes.seek(inner_offset)  # Move to column start
-
-            while True:
-                row_start = struct.unpack("<B", self.bytes.read(1))[0]  # Read row start
-                if row_start == 0xFF:
-                    break  # End of column
-
-                pixel_count = ord(self.bytes.read(1))
-                _ = self.bytes.read(1)  # Skip unused byte
-
-                pixels = list(self.bytes.read(pixel_count))
-                _ = self.bytes.read(1)  # Skip column termination byte
-
-                image_data[i, row_start : row_start + pixel_count] = pixels
-                image_alpha[i, row_start : row_start + pixel_count] = 1
-
-        # Some enemies have only one direction for sprites and use a left-right flip for the other.
-        if flip:
-            image_data = np.fliplr(image_data)
-            image_alpha = np.fliplr(image_alpha)
-
-        return image_data, image_alpha, left_offset, top_offset
-
-    def draw_patch(self, offset, size):
-        """Method to draw a single patch, with alpha channel."""
-
-        img_data, alpha, _, _ = self._read_patch_data(offset, size)
-
-        alpha = alpha.T[:, :, np.newaxis] * np.ones((1, 1, 4))
-        rgb_img = self.palette[img_data.T]
-        rgba_img = rgb_img * alpha
-
-        return rgba_img
-
     def _parse_map(self, map_name: str):
         map_info = defaultdict(list)
         metadata = {}
@@ -365,7 +316,7 @@ class WAD_file:
 
         return music_lumps
 
-    def save_mus(self, music_name, output_path=None):
+    def save_mus(self, music_name: str, output_path: str = None):
         if music_name not in self.musics.keys():
             raise ValueError(f"Music {music_name} not found in this {self.wad_type}.")
         if output_path is None:

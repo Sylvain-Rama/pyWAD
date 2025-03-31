@@ -63,10 +63,11 @@ class Mus2Mid:
         with open(mus_path, "rb") as musinput:
             header_id = struct.unpack("<4s", musinput.read(4))[0]
 
-            if header_id != MUS_ID:
+            if header_id not in [MUS_ID, MIDI_ID]:
                 raise ValueError(f"Unsupported file format: {header_id}")
             else:
                 self.mus_path = mus_path
+                self.id = header_id
                 logger.info(f"File format: {header_id}")
 
     def read_mus_header(self, musfile: BinaryIO) -> MusHeader:
@@ -217,7 +218,16 @@ class Mus2Mid:
         logger.info(f"Track size written: {self.tracksize} vs {musfileheader.scorelength}")
 
     def to_midi(self, output_path: str) -> None:
-        with open(self.mus_path, "rb") as musinput, open(output_path, "wb") as midioutput:
 
-            self.mus2mid(musinput, midioutput)
-            logger.info(f"Exported MUS {self.mus_path} as a MIDI file to {output_path}.")
+        if self.id == MUS_ID:
+            with open(self.mus_path, "rb") as musinput, open(output_path, "wb") as midioutput:
+                self.mus2mid(musinput, midioutput)
+                logger.info(f"Exported MUS {self.mus_path} as a MIDI file to {output_path}.")
+
+        elif self.id == MIDI_ID:
+            with open(self.mus_path, "rb") as musinput, open(output_path, "wb") as midioutput:
+                midioutput.write(musinput.read())
+                logger.info(f"Exported MIDI {self.mus_path} as a MIDI file to {output_path}.")
+
+        else:
+            raise ValueError(f"Unsupported file format: {self.id}")
