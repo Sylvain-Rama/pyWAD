@@ -26,7 +26,7 @@ class MIDIPlayer:
             raise ImportError("winmm.dll not found. This player only works on Windows.")
 
     def __repr__(self):
-        return f"MIDIPlayer(file_path={self.file_path}, stop_flag={self.stop_flag})."
+        return f"MIDIPlayer (file_path={self.file_path}, stop_flag={self.stop_flag})."
 
     def mci_send(self, command):
         buffer = ctypes.create_unicode_buffer(256)

@@ -33,8 +33,8 @@ class WadViewer:
         if size != 4096:
             raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
 
-        self.wad.wad.seek(offset)
-        flat = self.wad.wad.read(size)
+        self.wad.bytes.seek(offset)
+        flat = self.wad.bytes.read(size)
 
         indices = np.array(struct.unpack("4096B", flat), dtype=np.uint8).reshape((64, 64))  # 8-bit index array
         rgb_image = self.wad.palette[indices]
@@ -152,11 +152,11 @@ class WadViewer:
     def _read_patch_data(self, offset: int, size: int) -> np.ndarray:
         # See https://doomwiki.org/wiki/Picture_format for documentation
 
-        self.wad.wad.seek(offset)
+        self.wad.bytes.seek(offset)
 
-        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.wad.wad.read(8))
+        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.wad.bytes.read(8))
 
-        column_offsets = [struct.unpack("<I", self.wad.wad.read(4))[0] for _ in range(width)]
+        column_offsets = [struct.unpack("<I", self.wad.bytes.read(4))[0] for _ in range(width)]
 
         image_data = np.zeros((width, height), dtype=np.uint8)
         image_alpha = np.zeros((width, height), dtype=np.uint8)
@@ -164,18 +164,18 @@ class WadViewer:
         for i in range(width):
 
             inner_offset = column_offsets[i] + offset
-            self.wad.wad.seek(inner_offset)  # Move to column start
+            self.wad.bytes.seek(inner_offset)  # Move to column start
 
             while True:
-                row_start = struct.unpack("<B", self.wad.wad.read(1))[0]  # Read row start
+                row_start = struct.unpack("<B", self.wad.bytes.read(1))[0]  # Read row start
                 if row_start == 0xFF:
                     break  # End of column
 
-                pixel_count = ord(self.wad.wad.read(1))
-                _ = self.wad.wad.read(1)  # Skip unused byte
+                pixel_count = ord(self.wad.bytes.read(1))
+                _ = self.wad.bytes.read(1)  # Skip unused byte
 
                 pixels = list(self.wad.wad.read(pixel_count))
-                _ = self.wad.wad.read(1)  # Skip column termination byte
+                _ = self.wad.bytes.read(1)  # Skip column termination byte
 
                 image_data[i, row_start : row_start + pixel_count] = pixels
                 image_alpha[i, row_start : row_start + pixel_count] = 1

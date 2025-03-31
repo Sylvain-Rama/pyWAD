@@ -61,7 +61,7 @@ class WAD_file:
             self.dir_size = dir_size
             self.dir_offset = dir_offset
             self.wad_type = wad_type
-            self.wad = bytestring
+            self.bytes = bytestring
         else:
             bytestring = "None"
             raise TypeError("This is not a WAD file.")
@@ -70,17 +70,17 @@ class WAD_file:
         """Get the list of lumps in the WAD file."""
 
         # Read number of lumps and directory offset
-        self.wad.seek(4)
-        data = self.wad.read(8)
+        self.bytes.seek(4)
+        data = self.bytes.read(8)
         num_lumps, dir_offset = struct.unpack("<ii", data)
 
         # Go to directory start
-        self.wad.seek(dir_offset)
+        self.bytes.seek(dir_offset)
         lumps = []
 
         # Read each directory entry
         for _ in range(num_lumps):
-            lump_data = self.wad.read(16)
+            lump_data = self.bytes.read(16)
             offset, size, name = struct.unpack("<ii8s", lump_data)
             name = name.rstrip(b"\0").decode("ascii")
             lumps.append((name, offset, size))
@@ -88,8 +88,8 @@ class WAD_file:
         return lumps
 
     def _lump_data(self, offset: int, size: int) -> bytes:
-        self.wad.seek(offset)
-        return self.wad.read(size)
+        self.bytes.seek(offset)
+        return self.bytes.read(size)
 
     def _lump_data_by_name(self, lump_name: str) -> bytes:
         if lump_name not in self.lump_names:
@@ -205,11 +205,11 @@ class WAD_file:
     def _read_patch_data(self, offset: int, size: int, flip=False) -> np.ndarray:
         # See https://doomwiki.org/wiki/Picture_format for documentation
 
-        self.wad.seek(offset)
+        self.bytes.seek(offset)
 
-        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.wad.read(8))
+        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.bytes.read(8))
 
-        column_offsets = [struct.unpack("<I", self.wad.read(4))[0] for _ in range(width)]
+        column_offsets = [struct.unpack("<I", self.bytes.read(4))[0] for _ in range(width)]
 
         image_data = np.zeros((width, height), dtype=np.uint8)
         image_alpha = np.zeros((width, height), dtype=np.uint8)
@@ -217,18 +217,18 @@ class WAD_file:
         for i in range(width):
 
             inner_offset = column_offsets[i] + offset
-            self.wad.seek(inner_offset)  # Move to column start
+            self.bytes.seek(inner_offset)  # Move to column start
 
             while True:
-                row_start = struct.unpack("<B", self.wad.read(1))[0]  # Read row start
+                row_start = struct.unpack("<B", self.bytes.read(1))[0]  # Read row start
                 if row_start == 0xFF:
                     break  # End of column
 
-                pixel_count = ord(self.wad.read(1))
-                _ = self.wad.read(1)  # Skip unused byte
+                pixel_count = ord(self.bytes.read(1))
+                _ = self.bytes.read(1)  # Skip unused byte
 
-                pixels = list(self.wad.read(pixel_count))
-                _ = self.wad.read(1)  # Skip column termination byte
+                pixels = list(self.bytes.read(pixel_count))
+                _ = self.bytes.read(1)  # Skip column termination byte
 
                 image_data[i, row_start : row_start + pixel_count] = pixels
                 image_alpha[i, row_start : row_start + pixel_count] = 1
@@ -306,25 +306,25 @@ class WAD_file:
         lump_id = self.lump_names.index(lump_name)
         _, lump_offset, size = self.lumps[lump_id]
 
-        self.wad.seek(lump_offset)
-        texture1_data = self.wad.read(size)
+        self.bytes.seek(lump_offset)
+        texture1_data = self.bytes.read(size)
 
         numtextures = int.from_bytes(texture1_data[0:4], byteorder="little")
-        self.wad.seek(lump_offset + 4)
+        self.bytes.seek(lump_offset + 4)
 
         textures_offsets = []
         for i in range(numtextures):
-            offset = int.from_bytes(self.wad.read(4), byteorder="little")
+            offset = int.from_bytes(self.bytes.read(4), byteorder="little")
             textures_offsets.append(offset)
 
         for tx_offset in textures_offsets:
-            self.wad.seek(lump_offset + tx_offset)
-            texture_name = self.wad.read(8).decode("ascii").rstrip("\0")
+            self.bytes.seek(lump_offset + tx_offset)
+            texture_name = self.bytes.read(8).decode("ascii").rstrip("\0")
 
-            mask, width, height, col_dir = struct.unpack("<ihhi", self.wad.read(12))
+            mask, width, height, col_dir = struct.unpack("<ihhi", self.bytes.read(12))
 
-            patch_count = int.from_bytes(self.wad.read(2), byteorder="little")
-            map_patches = np.array([struct.unpack("<hhhhh", self.wad.read(10)) for i in range(patch_count)])
+            patch_count = int.from_bytes(self.bytes.read(2), byteorder="little")
+            map_patches = np.array([struct.unpack("<hhhhh", self.bytes.read(10)) for i in range(patch_count)])
 
             orig_x = map_patches[:, 0]
             orig_y = map_patches[:, 1]
@@ -372,9 +372,9 @@ class WAD_file:
             output_path = "output/" + music_name + ".mus"
 
         offset, size = self.musics[music_name]
-        self.wad.seek(offset)
+        self.bytes.seek(offset)
         with open(output_path, "wb") as f:
-            f.write(self.wad.read(size))
+            f.write(self.bytes.read(size))
         logger.info(f"Saved music {music_name} to {output_path}.")
 
 
