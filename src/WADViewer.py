@@ -20,10 +20,12 @@ class WadViewer:
         self.wad = wad
 
     def draw_flat(self, patch_name: str, ax=None):
-        output_fig = False
-        if patch_name not in self.wad.flats.keys():
-            raise ValueError(f"Patch {patch_name} not found in this WAD.")
 
+        if patch_name not in self.wad.flats.keys():
+            logger.error(f"Patch {patch_name} not found in this WAD.")
+            return None
+
+        output_fig = False
         if ax is None:
             fig, ax = plt.subplots(figsize=(4, 4))
             output_fig = True
@@ -39,7 +41,6 @@ class WadViewer:
         rgb_image = self.wad.palette[indices]
 
         ax.imshow(rgb_image / 255, interpolation="nearest")
-        ax.axis("off")
 
         if output_fig:
             fig.suptitle(patch_name)
@@ -47,6 +48,7 @@ class WadViewer:
             return fig
 
     def draw_map(self, map_name, palette: str = "OMGIFOL", ax=None, scaler: float = 1, show_secret: bool = True):
+
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
         map_data = self.wad.maps[map_name]
@@ -90,7 +92,7 @@ class WadViewer:
             fig.tight_layout(pad=0.2)
             return fig
 
-    def draw_tex(self, tex_name: str, scaler: int = 1) -> plt.Figure | None:
+    def draw_tex(self, tex_name: str, ax=None) -> plt.Figure | None:
         def paste_array(original, paste, x, y):
             """
             Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
@@ -119,6 +121,10 @@ class WadViewer:
         if tex_name not in self.wad.textures.keys():
             raise ValueError(f"Texture {tex_name} not found in WAD.")
 
+        output_fig = ax is None
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(10, 10))
+
         texture_data = self.wad.textures[tex_name]
         pix_width, pix_height = texture_data["width"], texture_data["height"]
 
@@ -142,11 +148,17 @@ class WadViewer:
 
         alphamap = alphamap.T[:, :, np.newaxis] * np.ones((1, 1, 4))
 
-        rgb_img = wad.palette[pixmap.T]
+        rgb_img = self.wad.palette[pixmap.T]
 
         rgba_img = rgb_img * alphamap
 
-        return rgba_img
+        ax.imshow(rgba_img / 255, interpolation="nearest")
+        ax.axis("equal")
+
+        if output_fig:
+            ax.axis("off")
+            fig.tight_layout(pad=1.2)
+            return fig
 
     def _read_patch_data(self, offset: int, size: int) -> np.ndarray:
         # See https://doomwiki.org/wiki/Picture_format for documentation
@@ -173,7 +185,7 @@ class WadViewer:
                 pixel_count = ord(self.wad.bytes.read(1))
                 _ = self.wad.bytes.read(1)  # Skip unused byte
 
-                pixels = list(self.wad.wad.read(pixel_count))
+                pixels = list(self.wad.bytes.read(pixel_count))
                 _ = self.wad.bytes.read(1)  # Skip column termination byte
 
                 image_data[i, row_start : row_start + pixel_count] = pixels
