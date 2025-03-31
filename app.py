@@ -57,7 +57,7 @@ elif page == "Maps":
         things = st.selectbox("Things", ["None", "Dots"])
         # show_secrets = st.checkbox("Show Secrets")
     fig = st.session_state["viewer"].draw_map(chosen_map, palette=palette)
-    st.pyplot(fig)
+    st.pyplot(fig, use_container_width=True)
 
 elif page == "Flats":
     flats = st.session_state["wad"].flats.keys()
@@ -74,7 +74,7 @@ elif page == "Flats":
             ax[i].axis("off")
 
         [ax[i].axis("off") for i in range(len(flats), len(ax))]
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
 
 
 elif page == "Textures":
@@ -82,14 +82,14 @@ elif page == "Textures":
 
     ncols = 6
     nrows = len(textures) // ncols + 1 if len(textures) % ncols != 0 else len(textures) // ncols
-    fig, ax = plt.subplots(nrows, ncols, figsize=(ncols * 4, nrows * 4))
+    fig, ax = plt.subplots(nrows, ncols, figsize=(ncols * 2, nrows * 2))
     ax = ax.ravel()
 
     with st.spinner(f"Drawing {len(textures)} textures..."):
         for i, texture_name in enumerate(textures):
             st.session_state["viewer"].draw_tex(texture_name, ax=ax[i])
             ax[i].axis("off")
-            ax[i].set_title(texture_name)
+            ax[i].set_title(texture_name, fontsize=10)
 
         [ax[i].axis("off") for i in range(len(textures), len(ax))]
         st.pyplot(fig)
