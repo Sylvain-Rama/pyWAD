@@ -11,7 +11,6 @@ ax = ax.ravel()
 with st.spinner(f"Drawing {len(flats)} flats..."):
     for i, flat_name in enumerate(flats):
         st.session_state["viewer"].draw_flat(flat_name, ax=ax[i])
-        # ax[i].set_title(flat_name)
         ax[i].axis("off")
 
     if len(flats) < len(ax):

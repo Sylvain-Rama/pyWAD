@@ -14,7 +14,6 @@ with st.spinner(f"Drawing {len(textures)} textures..."):
     for i, texture_name in enumerate(textures):
         st.session_state["viewer"].draw_tex(texture_name, ax=ax[i])
         ax[i].axis("off")
-        # ax[i].set_title(texture_name, fontsize=10)
 
     if len(textures) < len(ax):
         for i in range(len(textures), len(ax)):
