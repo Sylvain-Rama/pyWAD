@@ -183,7 +183,7 @@ class WAD_file:
                     logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
                 res_dict[name] = (offset, size)
 
-        logger.info(f"{len(res_dict.keys())} {sequence_name} found in this WAD.")
+        logger.info(f"Found {len(res_dict.keys())} {sequence_name} in this WAD.")
         return res_dict
 
     def _get_spritesheets(self) -> list[tuple[str, int, int]]:
