@@ -230,10 +230,8 @@ class WAD_file:
         flags = linedefs[:, 2]
 
         map_info["block"] = lines[filter_flags_by_bit(flags, 0)]  # Impassable bit is 0th bit (1 << 0)
-        map_info["two-sided"] = lines[
-            filter_flags_by_bit(flags, 2)
-        ]  # Two-sided, can see through bit is 2nd bit (1 << 2)
-        map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secret bit is 5th bit (1 << 5)
+        map_info["two-sided"] = lines[filter_flags_by_bit(flags, 2)]  # Two-sided
+        map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secret b
 
         lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
@@ -274,6 +272,8 @@ class WAD_file:
             offset = int.from_bytes(self.bytes.read(4), byteorder="little")
             textures_offsets.append(offset)
 
+        logger.debug(textures_offsets)
+
         for tx_offset in textures_offsets:
             self.bytes.seek(lump_offset + tx_offset)
             texture_name = self.bytes.read(8).decode("ascii").rstrip("\0")
@@ -287,7 +287,13 @@ class WAD_file:
             orig_y = map_patches[:, 1]
             patch_idxs = map_patches[:, 2]
 
-            patch_infos = [(patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i])) for i in range(patch_count)]
+            logger.debug(patch_idxs)
+
+            patch_infos = [
+                (patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i]))
+                for i in range(patch_count)
+                if patches[patch_idxs[i]] in self.lump_names
+            ]
             textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
 
         return textures
