@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+
+from matplotlib.collections import LineCollection
 import numpy as np
 import argparse
 import struct
@@ -70,21 +72,21 @@ class WadViewer:
         if output_fig:
             fig.patch.set_facecolor(bckgrd_color)
 
-        step_color = [x / 255 for x in cmap["2-sided"]]
-        for line in map_data["two-sided"]:
-            ax.plot(line[:, 0], line[:, 1], color=step_color, linewidth=0.6)
+        twosided_color = [x / 255 for x in cmap["2-sided"]]
+        twosided = LineCollection(map_data["two-sided"], colors=twosided_color, linewidths=0.6)
+        ax.add_collection(twosided)
 
         block_color = [x / 255 for x in cmap["block"]]
-        for line in map_data["block"]:
-            ax.plot(line[:, 0], line[:, 1], color=block_color, linewidth=0.6)
+        bloc_lines = LineCollection(map_data["block"], colors=block_color, linewidths=0.6)
+        ax.add_collection(bloc_lines)
 
         if show_secret:
             secret_color = [x / 255 for x in cmap["secret"]]
         else:
             secret_color = [x / 255 for x in cmap["block"]]
 
-        for line in map_data["secret"]:
-            ax.plot(line[:, 0], line[:, 1], color=secret_color, linewidth=0.6)
+        secret_lines = LineCollection(map_data["secret"], colors=secret_color, linewidths=0.6)
+        ax.add_collection(secret_lines)
 
         ax.axis("equal")
         ax.axis("off")
