@@ -61,8 +61,8 @@ MAP_CMAPS = {
     "OMGIFOL": {
         "background": [255, 255, 255],
         "block": [0, 0, 0],
-        "2-sided": [128, 128, 128],
-        "secret": [255, 0, 255],
+        "2-sided": [144, 144, 144],
+        "secret": [220, 130, 50],
     },
     "GZDOOM": {
         "background": [127, 103, 83],

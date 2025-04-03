@@ -203,6 +203,14 @@ class WAD_file:
         return res
 
     def _parse_map(self, map_name: str):
+
+        def filter_flags_by_bit(flags: np.array, bit_position: int) -> np.array:
+            """
+            Returns the indices of flags where the given bit_position is set to 1.
+            """
+            mask = (flags & (1 << bit_position)) != 0  # Check if the selected bit is set
+            return np.where(mask)[0]
+
         map_info = defaultdict(list)
         metadata = {}
 
@@ -221,13 +229,11 @@ class WAD_file:
         lines = vertices[linecoords]
         flags = linedefs[:, 2]
 
-        for line, flag in zip(lines, flags):
-            if flag & 0x20:  # Secret
-                map_info["secret"].append(line)
-            elif flag & 0x01:  # Impassable
-                map_info["walls"].append(line)
-            elif flag & 0x04:  # Two-sided, can see through
-                map_info["steps"].append(line)
+        map_info["block"] = lines[filter_flags_by_bit(flags, 0)]  # Impassable bit is 0th bit (1 << 0)
+        map_info["two-sided"] = lines[
+            filter_flags_by_bit(flags, 2)
+        ]  # Two-sided, can see through bit is 2nd bit (1 << 2)
+        map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secret bit is 5th bit (1 << 5)
 
         lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)

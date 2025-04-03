@@ -71,17 +71,17 @@ class WadViewer:
             fig.patch.set_facecolor(bckgrd_color)
 
         step_color = [x / 255 for x in cmap["2-sided"]]
-        for line in map_data["steps"]:
+        for line in map_data["two-sided"]:
             ax.plot(line[:, 0], line[:, 1], color=step_color, linewidth=0.6)
 
         block_color = [x / 255 for x in cmap["block"]]
-        for line in map_data["walls"]:
+        for line in map_data["block"]:
             ax.plot(line[:, 0], line[:, 1], color=block_color, linewidth=0.6)
 
         if show_secret:
             secret_color = [x / 255 for x in cmap["secret"]]
             for line in map_data["secret"]:
-                ax.plot(line[:, 0], line[:, 1], color=block_color, linewidth=0.6)
+                ax.plot(line[:, 0], line[:, 1], color=secret_color, linewidth=0.6)
 
         ax.axis("equal")
         ax.axis("off")
