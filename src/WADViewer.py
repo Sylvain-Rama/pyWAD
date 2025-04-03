@@ -80,8 +80,11 @@ class WadViewer:
 
         if show_secret:
             secret_color = [x / 255 for x in cmap["secret"]]
-            for line in map_data["secret"]:
-                ax.plot(line[:, 0], line[:, 1], color=secret_color, linewidth=0.6)
+        else:
+            secret_color = [x / 255 for x in cmap["block"]]
+
+        for line in map_data["secret"]:
+            ax.plot(line[:, 0], line[:, 1], color=secret_color, linewidth=0.6)
 
         ax.axis("equal")
         ax.axis("off")
