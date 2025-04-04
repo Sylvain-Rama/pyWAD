@@ -4,20 +4,18 @@ from matplotlib.collections import LineCollection
 import numpy as np
 import argparse
 import struct
-import sys
-import os
-import shutil
+
 from loguru import logger
 
 # sys.path.append("src/")
 
-from src.WADParser import WAD_file
-from src.palettes import MAP_CMAPS
+import WADParser
+from palettes import MAP_CMAPS
 
 
 class WadViewer:
-    def __init__(self, wad: WAD_file):
-        if not isinstance(wad, WAD_file):
+    def __init__(self, wad: WADParser.WAD_file):
+        if not isinstance(wad, WADParser.WAD_file):
             raise TypeError(f"WadViewer expects a WAD_file object, got {type(wad)}.")
         self.wad = wad
 
@@ -49,14 +47,6 @@ class WadViewer:
             fig.tight_layout(pad=1.2)
             return fig
 
-    def _parse_kwargs(kwargs):
-        block = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("block__")}
-        twosided = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("twosided__")}
-        special = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("special__")}
-        secret = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("secret__")}
-
-        return {"block": block, "twosided": twosided, "special": special, "secret": secret}
-
     def draw_map(
         self,
         map_name: str,
@@ -64,12 +54,22 @@ class WadViewer:
         ax=None,
         show_secret: bool = False,
         show_special: bool = True,
+        show_things=False,
         **kwargs,
     ):
-        supp_args = self._parse_kwargs(kwargs)
-
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
+
+        def parse_kwargs(kwargs):
+            block = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("block__")}
+            twosided = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("twosided__")}
+            special = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("special__")}
+            secret = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("secret__")}
+
+            return {"block": block, "twosided": twosided, "special": special, "secret": secret}
+
+        supp_args = parse_kwargs(kwargs)
+
         map_data = self.wad.maps[map_name]
         output_fig = False
 
@@ -77,7 +77,7 @@ class WadViewer:
             width, height = map_data["metadata"]["map_size"]
             wh_ratio = width / height
 
-            fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio))
+            fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio), dpi=150)
 
             output_fig = True
 
@@ -113,6 +113,10 @@ class WadViewer:
             secret_lines = LineCollection(map_data["secret"], **secret_args)
             ax.add_collection(secret_lines)
 
+        if show_things:
+            things_color = [x / 255 for x in cmap["things"]]
+            things_args = {"colors": things_color, "linewidths": 0.8} | supp_args["things"]
+
         ax.axis("equal")
         ax.axis("off")
 
@@ -126,7 +130,7 @@ class WadViewer:
         def paste_array(original: np.array, paste: np.array, alpha: np.array, x: int, y: int):
             """
             Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
-            Allows for negative x and y values.
+            Allows for negative x and y values, and only pastes where the alpha channel is > 0.
             I miss Labview paste-and-forget function :'(
             """
             orig_h, orig_w = original.shape
@@ -254,7 +258,7 @@ class WadViewer:
 if __name__ == "__main__":
 
     args = argparse.ArgumentParser()
-    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM2.wad")
+    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.wad")
     args.add_argument(
         "--command",
         "-c",
@@ -266,10 +270,10 @@ if __name__ == "__main__":
     args.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
     args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
     args.add_argument("--texture", "-t", type=str, help="Texture name", default="AASTINKY")
-    args.add_argument("--music", "-mu", type=str, help="Music lump name", default="D_MAP01")
 
     args = args.parse_args()
-    wad = open_wad_file(args.wad)
+    wad = WADParser.open_wad_file(args.wad)
+    viewer = WadViewer(wad)
 
     if args.command == "draw_map":
         if args.map == "*":
@@ -278,8 +282,7 @@ if __name__ == "__main__":
             maps_to_draw = [args.map]
 
         for map_name in maps_to_draw:
-            map_data = wad.map(map_name)
-            fig = draw_map(map_data, palette=args.palette)
+            fig = viewer.draw_map(map_name, palette=args.palette)
             fig.savefig(f"output/{map_name}.png", bbox_inches="tight", dpi=300)
 
     elif args.command == "draw_tex":
@@ -289,13 +292,5 @@ if __name__ == "__main__":
             textures_to_draw = [args.texture]
 
         for texture_name in textures_to_draw:
-            fig = draw_tex(wad, texture_name)
+            fig = viewer.draw_tex(wad, texture_name)
             fig.savefig(f"output/{texture_name}.png", bbox_inches="tight", dpi=300)
-
-    elif args.command == "get_music":
-        if args.music == "*":
-            musics_to_get = wad.musics.keys()
-        else:
-            musics_to_get = [args.music]
-        for music_name in musics_to_get:
-            save_music(wad, music_name)

@@ -240,9 +240,9 @@ class WAD_file:
         lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
 
-        things_dict = defaultdict(list)
+        things_dict = defaultdict(dict)
         for thing in things:
-            things_dict[self.id2sprites.get(thing[3], "NONE")].append((int(thing[0]), int(thing[1])))
+            things_dict[self.id2sprites.get(thing[3], "NONE")]["x"].append((int(thing[0]), int(thing[1])))
 
         map_info["things"] = things_dict
         map_info["metadata"] = metadata

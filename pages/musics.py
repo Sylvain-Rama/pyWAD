@@ -24,7 +24,10 @@ if f"{chosen_music}.mid" not in os.listdir("output"):
 
 # Create the player if it's not created yet or if the music is changed
 if st.session_state["player"] is None:
-    st.session_state["player"] = MIDIPlayer(midi_name)
+    try:
+        st.session_state["player"] = MIDIPlayer(midi_name)
+    except Exception as e:
+        st.error(f"Error loading music: {e}")
     st.session_state["current_music"] = chosen_music
 
 if st.session_state["current_music"] != chosen_music:

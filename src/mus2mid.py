@@ -16,6 +16,8 @@ MUS_PERCUSSION_CHAN = 15
 MUS_ID = b"MUS\x1a"
 MIDI_ID = b"MThd"
 
+FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid"}
+
 
 # MUS event codes
 class Musevent(IntEnum):
@@ -63,12 +65,12 @@ class Mus2Mid:
         with open(mus_path, "rb") as musinput:
             header_id = struct.unpack("<4s", musinput.read(4))[0]
 
-            if header_id not in [MUS_ID, MIDI_ID]:
+            if header_id not in FORMATS.keys():
                 raise ValueError(f"Unsupported file format: {header_id}")
             else:
                 self.mus_path = mus_path
                 self.id = header_id
-                logger.info(f"File format: {header_id}")
+                logger.info(f"File format detected: {header_id}")
 
     def read_mus_header(self, musfile: BinaryIO) -> MusHeader:
         """Reads and returns a MUS file header."""
