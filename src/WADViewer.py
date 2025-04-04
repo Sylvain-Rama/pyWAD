@@ -61,12 +61,14 @@ class WadViewer:
             raise ValueError(f"Map {map_name} not found in this WAD.")
 
         def parse_kwargs(kwargs):
-            block = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("block__")}
-            twosided = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("twosided__")}
-            special = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("special__")}
-            secret = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("secret__")}
 
-            return {"block": block, "twosided": twosided, "special": special, "secret": secret}
+            # Parse kwargs to get attributes for each type of line
+            attribs = ["block", "twosided", "special", "secret", "things"]
+            attrib_dict = {}
+            for a in attribs:
+                attrib_dict[a] = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith(f"{a}__")}
+
+            return attrib_dict
 
         supp_args = parse_kwargs(kwargs)
 
@@ -115,7 +117,9 @@ class WadViewer:
 
         if show_things:
             things_color = [x / 255 for x in cmap["things"]]
-            things_args = {"colors": things_color, "linewidths": 0.8} | supp_args["things"]
+            things_dict = map_data["things"]
+            things_args = {"color": things_color, "s": 5, "marker": "+"} | supp_args["things"]
+            ax.scatter(things_dict["all_things"]["x"], things_dict["all_things"]["y"], **things_args)
 
         ax.axis("equal")
         ax.axis("off")

@@ -232,17 +232,25 @@ class WAD_file:
 
         map_info["block"] = lines[filter_flags_by_bit(flags, 0)]  # Impassable bit is 0th bit (1 << 0)
         map_info["two-sided"] = lines[filter_flags_by_bit(flags, 2)]  # Two-sided
-        map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secret b
-        map_info["special"] = lines[
-            np.where(specials != 0)[0]
-        ]  # Special line (e.g. teleport, door, etc.))]  # Teleport
+        map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secrets
+        map_info["special"] = lines[np.where(specials != 0)[0]]  # specials
 
         lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
 
-        things_dict = defaultdict(dict)
+        things_dict = {}
         for thing in things:
-            things_dict[self.id2sprites.get(thing[3], "NONE")]["x"].append((int(thing[0]), int(thing[1])))
+            thing_name = self.id2sprites.get(thing[3], "NONE")
+            if thing_name in ["NONE", "none", "none-"]:
+                continue
+            if thing_name not in things_dict:
+                things_dict[thing_name] = {"x": [int(thing[0])], "y": [int(thing[1])]}
+            else:
+                things_dict[thing_name]["x"].append(int(thing[0]))
+                things_dict[thing_name]["y"].append(int(thing[1]))
+
+        # Simple way to get everything for plotting in the maps, but will keep the NONE keys.
+        things_dict["all_things"] = {"x": things[:, 0], "y": things[:, 1]}
 
         map_info["things"] = things_dict
         map_info["metadata"] = metadata
