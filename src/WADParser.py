@@ -287,14 +287,14 @@ class WAD_file:
             orig_y = map_patches[:, 1]
             patch_idxs = map_patches[:, 2]
 
-            logger.debug(patch_idxs)
-
             patch_infos = [
                 (patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i]))
                 for i in range(patch_count)
-                if patches[patch_idxs[i]] in self.lump_names
+                if patches[patch_idxs[i]] in self.lump_names  # Only include patches that exist in the WAD
             ]
-            textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
+            # Some PWADs have textures that reference patches not present in the WAD. We skip these.
+            if len(patch_infos) > 0:
+                textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
 
         return textures
 
