@@ -15,6 +15,15 @@ import WADParser
 from palettes import MAP_CMAPS
 
 
+def parse_kwargs(kwargs):
+    block = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("block__")}
+    twosided = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("twosided__")}
+    special = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("special__")}
+    secret = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("secret__")}
+
+    return {"block": block, "twosided": twosided, "special": special, "secret": secret}
+
+
 class WadViewer:
     def __init__(self, wad: WADParser.WAD_file):
         if not isinstance(wad, WADParser.WAD_file):
@@ -54,10 +63,11 @@ class WadViewer:
         map_name,
         palette: str = "OMGIFOL",
         ax=None,
-        scaler: float = 1,
         show_secret: bool = False,
         show_special: bool = True,
+        **kwargs,
     ):
+        supp_args = parse_kwargs(kwargs)
 
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
@@ -75,22 +85,27 @@ class WadViewer:
         cmap = MAP_CMAPS[palette]
 
         bckgrd_color = [x / 255 for x in cmap["background"]]
+        twosided_color = [x / 255 for x in cmap["2-sided"]]
+        block_color = [x / 255 for x in cmap["block"]]
 
         ax.set_facecolor(bckgrd_color)
         if output_fig:
             fig.patch.set_facecolor(bckgrd_color)
 
-        twosided_color = [x / 255 for x in cmap["2-sided"]]
-        twosided = LineCollection(map_data["two-sided"], colors=twosided_color, linewidths=0.6)
+        twosided_args = {"colors": twosided_color, "linewidths": 0.6} | supp_args["twosided"]
+
+        twosided = LineCollection(map_data["two-sided"], **twosided_args)
         ax.add_collection(twosided)
 
-        block_color = [x / 255 for x in cmap["block"]]
-        bloc_lines = LineCollection(map_data["block"], colors=block_color, linewidths=0.6)
+        block_args = {"colors": block_color, "linewidths": 0.6} | supp_args["block"]
+
+        bloc_lines = LineCollection(map_data["block"], **block_args)
         ax.add_collection(bloc_lines)
 
+        # secial and secret lines are drawn on top of regular lines.
         if show_special:
-            special_color = [1, 0, 0]
-            special_lines = LineCollection(map_data["special"], colors=special_color, linewidths=2)
+            special_color = [x / 255 for x in cmap["special"]]
+            special_lines = LineCollection(map_data["special"], colors=special_color, linewidths=0.8)
             ax.add_collection(special_lines)
 
         if show_secret:

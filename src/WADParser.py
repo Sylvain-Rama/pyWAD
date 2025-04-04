@@ -230,8 +230,6 @@ class WAD_file:
         flags = linedefs[:, 2]
         specials = linedefs[:, 3]
 
-        logger.debug(np.unique(specials, return_counts=True))
-
         map_info["block"] = lines[filter_flags_by_bit(flags, 0)]  # Impassable bit is 0th bit (1 << 0)
         map_info["two-sided"] = lines[filter_flags_by_bit(flags, 2)]  # Two-sided
         map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secret b
