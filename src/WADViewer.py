@@ -9,24 +9,15 @@ import os
 import shutil
 from loguru import logger
 
-sys.path.append("src/")
+# sys.path.append("src/")
 
-import WADParser
-from palettes import MAP_CMAPS
-
-
-def parse_kwargs(kwargs):
-    block = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("block__")}
-    twosided = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("twosided__")}
-    special = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("special__")}
-    secret = {k.split("__")[0]: v for k, v in kwargs.items() if k.startswith("secret__")}
-
-    return {"block": block, "twosided": twosided, "special": special, "secret": secret}
+from src.WADParser import WAD_file
+from src.palettes import MAP_CMAPS
 
 
 class WadViewer:
-    def __init__(self, wad: WADParser.WAD_file):
-        if not isinstance(wad, WADParser.WAD_file):
+    def __init__(self, wad: WAD_file):
+        if not isinstance(wad, WAD_file):
             raise TypeError(f"WadViewer expects a WAD_file object, got {type(wad)}.")
         self.wad = wad
 
@@ -58,16 +49,24 @@ class WadViewer:
             fig.tight_layout(pad=1.2)
             return fig
 
+    def _parse_kwargs(kwargs):
+        block = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("block__")}
+        twosided = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("twosided__")}
+        special = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("special__")}
+        secret = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith("secret__")}
+
+        return {"block": block, "twosided": twosided, "special": special, "secret": secret}
+
     def draw_map(
         self,
-        map_name,
+        map_name: str,
         palette: str = "OMGIFOL",
         ax=None,
         show_secret: bool = False,
         show_special: bool = True,
         **kwargs,
     ):
-        supp_args = parse_kwargs(kwargs)
+        supp_args = self._parse_kwargs(kwargs)
 
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
@@ -88,16 +87,15 @@ class WadViewer:
         twosided_color = [x / 255 for x in cmap["2-sided"]]
         block_color = [x / 255 for x in cmap["block"]]
 
+        twosided_args = {"colors": twosided_color, "linewidths": 0.6} | supp_args["twosided"]
+        block_args = {"colors": block_color, "linewidths": 0.8} | supp_args["block"]
+
         ax.set_facecolor(bckgrd_color)
         if output_fig:
             fig.patch.set_facecolor(bckgrd_color)
 
-        twosided_args = {"colors": twosided_color, "linewidths": 0.6} | supp_args["twosided"]
-
         twosided = LineCollection(map_data["two-sided"], **twosided_args)
         ax.add_collection(twosided)
-
-        block_args = {"colors": block_color, "linewidths": 0.6} | supp_args["block"]
 
         bloc_lines = LineCollection(map_data["block"], **block_args)
         ax.add_collection(bloc_lines)
@@ -105,12 +103,14 @@ class WadViewer:
         # secial and secret lines are drawn on top of regular lines.
         if show_special:
             special_color = [x / 255 for x in cmap["special"]]
-            special_lines = LineCollection(map_data["special"], colors=special_color, linewidths=0.8)
+            special_args = {"colors": special_color, "linewidths": 0.8} | supp_args["special"]
+            special_lines = LineCollection(map_data["special"], **special_args)
             ax.add_collection(special_lines)
 
         if show_secret:
             secret_color = [x / 255 for x in cmap["secret"]]
-            secret_lines = LineCollection(map_data["secret"], colors=secret_color, linewidths=0.8)
+            secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
+            secret_lines = LineCollection(map_data["secret"], **secret_args)
             ax.add_collection(secret_lines)
 
         ax.axis("equal")
