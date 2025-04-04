@@ -326,7 +326,7 @@ class WAD_file:
         return textures
 
     def _gather_musics(self):
-        music_lumps = [lump for lump in self.lumps if lump[0].startswith("D_")]
+        music_lumps = [lump for lump in self.lumps if (lump[0].startswith("D_") | lump[0].startswith("MUS_"))]
 
         if len(music_lumps) == 0:
             logger.info(f"No music found in this {self.wad_type}.")
