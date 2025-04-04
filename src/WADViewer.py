@@ -49,7 +49,15 @@ class WadViewer:
             fig.tight_layout(pad=1.2)
             return fig
 
-    def draw_map(self, map_name, palette: str = "OMGIFOL", ax=None, scaler: float = 1, show_secret: bool = True):
+    def draw_map(
+        self,
+        map_name,
+        palette: str = "OMGIFOL",
+        ax=None,
+        scaler: float = 1,
+        show_secret: bool = False,
+        show_special: bool = True,
+    ):
 
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
@@ -80,13 +88,15 @@ class WadViewer:
         bloc_lines = LineCollection(map_data["block"], colors=block_color, linewidths=0.6)
         ax.add_collection(bloc_lines)
 
+        if show_special:
+            special_color = [1, 0, 0]
+            special_lines = LineCollection(map_data["special"], colors=special_color, linewidths=2)
+            ax.add_collection(special_lines)
+
         if show_secret:
             secret_color = [x / 255 for x in cmap["secret"]]
-        else:
-            secret_color = [x / 255 for x in cmap["block"]]
-
-        secret_lines = LineCollection(map_data["secret"], colors=secret_color, linewidths=0.6)
-        ax.add_collection(secret_lines)
+            secret_lines = LineCollection(map_data["secret"], colors=secret_color, linewidths=0.8)
+            ax.add_collection(secret_lines)
 
         ax.axis("equal")
         ax.axis("off")

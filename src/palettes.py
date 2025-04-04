@@ -50,24 +50,27 @@ DEFAULT_PALETTE = b"\
 \xff\xff\x00\xff\xcf\x00\xcf\x9f\x00\x9b\x6f\x00\x6b\xa7\x6b\x6b\
 "
 
-# Color schemes for drawing maps, RGBA format
+# Color schemes for drawing maps, RGB format
 MAP_CMAPS = {
     "DOOM": {
         "background": [0, 0, 0],
         "block": [255, 0, 0],
         "2-sided": [255, 255, 0],
         "secret": [255, 19, 255],
+        "special": [20, 20, 255],
     },
     "OMGIFOL": {
         "background": [255, 255, 255],
         "block": [0, 0, 0],
         "2-sided": [144, 144, 144],
-        "secret": [220, 130, 50],
+        "secret": [255, 19, 255],
+        "special": [220, 130, 50],
     },
     "GZDOOM": {
         "background": [127, 103, 83],
         "block": [63, 43, 27],
         "2-sided": [155, 131, 107],
         "secret": [255, 19, 255],
+        "special": [255, 5, 5],
     },
 }
