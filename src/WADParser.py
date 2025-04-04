@@ -272,8 +272,6 @@ class WAD_file:
             offset = int.from_bytes(self.bytes.read(4), byteorder="little")
             textures_offsets.append(offset)
 
-        logger.debug(textures_offsets)
-
         for tx_offset in textures_offsets:
             self.bytes.seek(lump_offset + tx_offset)
             texture_name = self.bytes.read(8).decode("ascii").rstrip("\0")
@@ -292,7 +290,7 @@ class WAD_file:
                 for i in range(patch_count)
                 if patches[patch_idxs[i]] in self.lump_names  # Only include patches that exist in the WAD
             ]
-            # Some PWADs have textures that reference patches not present in the WAD. We skip these.
+            # Some PWADs have textures that reference patches not present in the WAD. Skip them.
             if len(patch_infos) > 0:
                 textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
 

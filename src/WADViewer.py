@@ -98,7 +98,7 @@ class WadViewer:
             return fig
 
     def draw_tex(self, tex_name: str, ax=None) -> plt.Figure | None:
-        def paste_array(original, paste, x, y):
+        def paste_array(original, paste, alpha, x, y):
             """
             Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
             Allows for negative x and y values.
@@ -119,7 +119,11 @@ class WadViewer:
             paste_x_end = paste_x_start + (x_end - x_start)
             paste_y_end = paste_y_start + (y_end - y_start)
 
-            original[y_start:y_end, x_start:x_end] = paste[paste_y_start:paste_y_end, paste_x_start:paste_x_end]
+            original[y_start:y_end, x_start:x_end] = np.where(
+                alpha[paste_y_start:paste_y_end, paste_x_start:paste_x_end] > 0,
+                paste[paste_y_start:paste_y_end, paste_x_start:paste_x_end],
+                original[y_start:y_end, x_start:x_end],
+            )
 
             return original
 
@@ -134,7 +138,7 @@ class WadViewer:
         pix_width, pix_height = texture_data["width"], texture_data["height"]
 
         pixmap = np.zeros((pix_width, pix_height), dtype=np.uint8)
-        alphamap = np.zeros((pix_width, pix_height), dtype=np.uint8)
+        alphamap = np.ones((pix_width, pix_height), dtype=np.uint8)
 
         for patch_name, x, y in texture_data["patches"]:
 
@@ -148,8 +152,8 @@ class WadViewer:
             img, alpha, _, _ = self._read_patch_data(offset, size)
 
             # x and y are flipped as the image will be transposed after
-            pixmap = paste_array(pixmap, img, y, x)
-            alphamap = paste_array(alphamap, alpha, y, x)
+            pixmap = paste_array(pixmap, img, alpha, y, x)
+            # alphamap = paste_array(alphamap, alpha, y, x)
 
         alphamap = alphamap.T[:, :, np.newaxis] * np.ones((1, 1, 4))
 
