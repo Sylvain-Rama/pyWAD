@@ -98,7 +98,7 @@ class WadViewer:
             return fig
 
     def draw_tex(self, tex_name: str, ax=None) -> plt.Figure | None:
-        def paste_array(original, paste, alpha, x, y):
+        def paste_array(original: np.array, paste: np.array, alpha: np.array, x: int, y: int):
             """
             Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
             Allows for negative x and y values.
@@ -119,6 +119,7 @@ class WadViewer:
             paste_x_end = paste_x_start + (x_end - x_start)
             paste_y_end = paste_y_start + (y_end - y_start)
 
+            # We want to paste the new texture only where its transparency is > 0
             original[y_start:y_end, x_start:x_end] = np.where(
                 alpha[paste_y_start:paste_y_end, paste_x_start:paste_x_end] > 0,
                 paste[paste_y_start:paste_y_end, paste_x_start:paste_x_end],
@@ -153,9 +154,8 @@ class WadViewer:
 
             # x and y are flipped as the image will be transposed after
             pixmap = paste_array(pixmap, img, alpha, y, x)
-            # alphamap = paste_array(alphamap, alpha, y, x)
 
-        alphamap = alphamap.T[:, :, np.newaxis] * np.ones((1, 1, 4))
+        alphamap = alphamap.T[:, :, np.newaxis]
 
         rgb_img = self.wad.palette[pixmap.T]
 
@@ -202,7 +202,7 @@ class WadViewer:
 
         return image_data, image_alpha, left_offset, top_offset
 
-    def draw_patch(self, offset, size):
+    def draw_patch(self, offset: int, size: int):
 
         img_data, alpha, left, top = self._read_patch_data(offset, size)
 
@@ -212,7 +212,7 @@ class WadViewer:
 
         return rgba_img
 
-    def draw_sprite(self, sprite_name, ax=None):
+    def draw_sprite(self, sprite_name: str, ax=None) -> np.array:
         """Method to draw a single patch, with alpha channel."""
         if sprite_name not in self.wad.sprites.keys():
             raise ValueError(f"Unknown patch name {sprite_name} in this WAD.")
@@ -224,41 +224,6 @@ class WadViewer:
         rgba_img = rgb_img * alpha
 
         return rgba_img
-
-
-def save_music(wad: WADParser.WAD_file, lump_name: str, output_path: str | None = None) -> None:
-
-    if lump_name not in wad.musics.keys():
-        raise ValueError(f"Unknown music lump: {lump_name}.")
-
-    if output_path is None:
-        output_path = f"output/{lump_name}.mid"
-
-    temp_path = "output/lump.mus"
-
-    music_lump = wad._lump_data(*wad.musics[lump_name])
-
-    with open(temp_path, "wb") as f:
-        f.write(music_lump)
-
-    with open(temp_path, "rb") as musinput, open(output_path, "wb") as midioutput:
-        header_id = struct.unpack("<4s", musinput.read(4))[0]
-
-        if header_id == MUS_ID:
-
-            musinput.seek(0)
-            mus2mid(musinput, midioutput)
-            logger.info(f"Exported MUS {lump_name} as a MIDI file.")
-
-    if header_id == MIDI_ID:
-
-        shutil.copy(temp_path, output_path)
-        logger.info(f"Saved MIDI {lump_name} as a MIDI file.")
-
-    elif header_id != MUS_ID:
-        logger.info(f"Lump {lump_name} music format not recognised: {header_id}.")
-
-    os.remove(temp_path)
 
 
 if __name__ == "__main__":
