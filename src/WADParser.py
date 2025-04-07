@@ -7,20 +7,15 @@ from loguru import logger
 import re
 import numpy as np
 
+"""Sources:
+https://doomwiki.org/wiki/WAD
+https://www.gamers.org/dhs/helpdocs/dmsp1666.html
+
+"""
 
 sys.path.append("src/")
 from utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
 from palettes import DEFAULT_PALETTE
-
-
-def open_wad_file(wad_path: str):
-    """Open a WAD file and return a WAD_file object."""
-
-    if not os.path.isfile(wad_path):
-        raise ValueError(f"No file detected at {wad_path}")
-
-    else:
-        return WAD_file(open(wad_path, "rb"))
 
 
 class WAD_file:
@@ -349,6 +344,16 @@ class WAD_file:
         with open(output_path, "wb") as f:
             f.write(self.bytes.read(size))
         logger.info(f"Saved music {music_name} to {output_path}.")
+
+
+def open_wad_file(wad_path: str) -> WAD_file:
+    """Open a WAD file and return a WAD_file object."""
+
+    if not os.path.isfile(wad_path):
+        raise ValueError(f"No file detected at {wad_path}")
+
+    else:
+        return WAD_file(open(wad_path, "rb"))
 
 
 def main():
