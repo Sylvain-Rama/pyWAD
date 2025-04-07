@@ -89,8 +89,8 @@ class WadViewer:
         twosided_color = [x / 255 for x in cmap["2-sided"]]
         block_color = [x / 255 for x in cmap["block"]]
 
-        twosided_args = {"colors": twosided_color, "linewidths": 0.6} | supp_args["twosided"]
-        block_args = {"colors": block_color, "linewidths": 0.8} | supp_args["block"]
+        twosided_args = {"colors": twosided_color, "linewidths": 0.6, "capstyle": "round"} | supp_args["twosided"]
+        block_args = {"colors": block_color, "linewidths": 0.8, "capstyle": "round"} | supp_args["block"]
 
         ax.set_facecolor(bckgrd_color)
         if output_fig:
