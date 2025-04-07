@@ -46,6 +46,7 @@ if uploaded_file is not None:
         st.session_state["wad"] = wad
         st.session_state["wad_path"] = uploaded_file.name
         st.session_state["viewer"] = WadViewer(wad)
+        st.session_state["title_pic"] = None
 
         # Cleaning the output folder.
         for f in os.listdir("output"):
