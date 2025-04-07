@@ -205,7 +205,7 @@ class WAD_file:
             """
             Returns the indices of flags where the given bit_position is set to 1.
             """
-            mask = (flags & (1 << bit_position)) != 0  # Check if the selected bit is set
+            mask = (flags & (1 << bit_position)) != 0
             return np.where(mask)[0]
 
         map_info = defaultdict(list)
@@ -220,7 +220,17 @@ class WAD_file:
         metadata["map_name"] = map_name
 
         lump = self._lump_data(*self._maps_lumps[map_name]["LINEDEFS"])
-        linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
+
+        if self.game_type in ["DOOM", "HERETIC"]:
+
+            linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
+
+        elif self.game_type == "HEXEN":
+            linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
+
+        else:
+            logger.error("Unable to parse map linedefs.")
+            return None
         linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
 
         lines = vertices[linecoords]
