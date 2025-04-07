@@ -33,6 +33,8 @@ class WAD_file:
             self.game_type = "HERETIC"
         if "BEHAVIOR" in self.lump_names:
             self.game_type = "HEXEN"
+        if "ENDMAP" in self.lump_names:
+            self.game_type = "UDMF"
         logger.info(f"Found a {self.game_type} {self.wad_type}.")
 
         self.palette = self._get_palette()
@@ -58,7 +60,7 @@ class WAD_file:
             self.wad_type = wad_type
             self.bytes = bytestring
         else:
-            bytestring = "None"
+            bytestring = None
             raise TypeError("This is not a WAD file.")
 
     def _get_lumps(self) -> list[tuple[str, int, int]]:
@@ -218,7 +220,7 @@ class WAD_file:
         metadata["map_name"] = map_name
 
         lump = self._lump_data(*self._maps_lumps[map_name]["LINEDEFS"])
-        linedefs = np.array([struct.unpack("<hhhhhhh", lump[i : i + 14]) for i in range(0, len(lump), 14)])
+        linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
         linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
 
         lines = vertices[linecoords]
@@ -231,7 +233,7 @@ class WAD_file:
         map_info["special"] = lines[np.where(specials != 0)[0]]  # specials
 
         lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
-        things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
+        things = np.array([struct.unpack("<HHHHH", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
 
         things_dict = {}
         for thing in things:

@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+from loguru import logger
 
 flats = st.session_state["wad"].flats.keys()
 
@@ -10,8 +11,12 @@ ax = ax.ravel()
 
 with st.spinner(f"Drawing {len(flats)} flats..."):
     for i, flat_name in enumerate(flats):
-        st.session_state["viewer"].draw_flat(flat_name, ax=ax[i])
         ax[i].axis("off")
+        try:
+            st.session_state["viewer"].draw_flat(flat_name, ax=ax[i])
+        except NotImplementedError as e:
+            logger.error(f"Error drawing flat {flat_name}: {e}")
+            continue
 
     if len(flats) < len(ax):
         for i in range(len(flats), len(ax)):
