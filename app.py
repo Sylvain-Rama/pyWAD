@@ -9,6 +9,7 @@ sys.path.append("src/")
 
 from WADParser import WAD_file
 from WADViewer import WadViewer
+from app_utils import Page, page_to_icon, page_to_path, img_to_bytes
 
 
 def get_titlepic(wad_file, viewer):

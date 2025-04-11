@@ -14,7 +14,7 @@ https://www.gamers.org/dhs/helpdocs/dmsp1666.html
 """
 
 sys.path.append("src/")
-from utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
+from src.parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
 from palettes import DEFAULT_PALETTE
 
 
@@ -36,6 +36,8 @@ class WAD_file:
         if "ENDMAP" in self.lump_names:
             self.game_type = "UDMF"
         logger.info(f"Found a {self.game_type} {self.wad_type}.")
+
+        self._maps_lumps, self._misc_lumps = self._parse_lumps()
 
         self.palette = self._get_palette()
         self._maps_lumps = self._parse_levels()
@@ -83,6 +85,41 @@ class WAD_file:
             lumps.append((name, offset, size))
 
         return lumps
+
+    def _parse_lumps(self):
+        misc_lumps = {}
+        maps_lumps = {}
+        lump_names = [x[0] for x in self.lumps]
+
+        maps_names = [x for x in lump_names if EXMY_REGEX.match(x)]
+        maps_idxs = [i for i, x in enumerate(lump_names) if EXMY_REGEX.match(x)]
+
+        if len(maps_names) == 0:
+            maps_names = [x for x in lump_names if MAPXY_REGEX.match(x)]
+            maps_idxs = [i for i, x in enumerate(lump_names) if MAPXY_REGEX.match(x)]
+
+        if len(maps_names) == 1:
+            maps_attrs_len = len(MAPS_ATTRS[self.game_type])
+        else:
+            maps_attrs_len = np.diff(maps_idxs)[0] - 1
+
+        i = 0
+        while i < len(self.lumps):
+            name, offset, size = self.lumps[i]
+            if name in maps_names:
+                maps_lumps[name] = {}
+                for j in range(maps_attrs_len):
+                    maps_lumps[name][self.lumps[i + j + 1][0]] = self.lumps[i + j + 1][1:]
+                i += maps_attrs_len + 1
+
+            else:
+                i += 1
+                if name in misc_lumps:
+                    logger.info(f"Duplicate lump name: {name}")
+                    continue
+                misc_lumps[name] = (offset, size)
+
+        return maps_lumps, misc_lumps
 
     def _lump_data(self, offset: int, size: int) -> bytes:
         self.bytes.seek(offset)

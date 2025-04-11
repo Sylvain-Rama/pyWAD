@@ -19,10 +19,29 @@ class WadViewer:
             raise TypeError(f"WadViewer expects a WAD_file object, got {type(wad)}.")
         self.wad = wad
 
-    def draw_flat(self, patch_name: str, ax=None):
+    def get_flat_data(self, offset: int, size: int) -> np.ndarray:
+        if size == 320 * 200:
+            shape = (320, 200)
 
-        if patch_name not in self.wad.flats.keys():
-            logger.error(f"Patch {patch_name} not found in this WAD.")
+        elif size % 64 == 0:
+            shape = (size // 64, 64)
+
+        else:
+            logger.debug(size)
+            raise NotImplementedError("This flat has an unknown size.")
+
+        self.wad.bytes.seek(offset)
+        flat = self.wad.bytes.read(size)
+
+        indices = np.array(struct.unpack(f"{size}B", flat), dtype=np.uint8).reshape(shape)  # 8-bit index array
+        rgb_image = self.wad.palette[indices]
+
+        return rgb_image
+
+    def draw_flat(self, flat_name: str, ax=None):
+
+        if flat_name not in self.wad.flats.keys():
+            logger.error(f"Patch {flat_name} not found in this WAD.")
             return None
 
         output_fig = False
@@ -30,20 +49,14 @@ class WadViewer:
             fig, ax = plt.subplots(figsize=(4, 4))
             output_fig = True
 
-        offset, size = self.wad.flats[patch_name]
-        if size != 4096:
-            raise NotImplementedError("Flats can be only of 64*64 size. For the moment.")
+        offset, size = self.wad.flats[flat_name]
 
-        self.wad.bytes.seek(offset)
-        flat = self.wad.bytes.read(size)
-
-        indices = np.array(struct.unpack("4096B", flat), dtype=np.uint8).reshape((64, 64))  # 8-bit index array
-        rgb_image = self.wad.palette[indices]
+        rgb_image = self.get_flat_data(offset, size)
 
         ax.imshow(rgb_image / 255, interpolation="nearest")
 
         if output_fig:
-            fig.suptitle(patch_name)
+            fig.suptitle(flat_name)
             fig.tight_layout(pad=1.2)
             return fig
 
@@ -130,7 +143,7 @@ class WadViewer:
             fig.tight_layout(pad=0.2)
             return fig
 
-    def draw_tex(self, tex_name: str, ax=None) -> plt.Figure | None:
+    def get_tex_data(self, tex_name: str) -> np.array:
         def paste_array(original: np.array, paste: np.array, alpha: np.array, x: int, y: int):
             """
             Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
@@ -161,13 +174,6 @@ class WadViewer:
 
             return original
 
-        if tex_name not in self.wad.textures.keys():
-            raise ValueError(f"Texture {tex_name} not found in WAD.")
-
-        output_fig = ax is None
-        if ax is None:
-            fig, ax = plt.subplots(figsize=(10, 10))
-
         texture_data = self.wad.textures[tex_name]
         pix_width, pix_height = texture_data["width"], texture_data["height"]
 
@@ -193,6 +199,19 @@ class WadViewer:
         rgb_img = self.wad.palette[pixmap.T]
 
         rgba_img = rgb_img * alphamap
+
+        return rgba_img
+
+    def draw_tex(self, tex_name: str, ax=None) -> plt.Figure | None:
+
+        if tex_name not in self.wad.textures.keys():
+            raise ValueError(f"Texture {tex_name} not found in WAD.")
+
+        output_fig = ax is None
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(10, 10))
+
+        rgba_img = self._get_tex_rgba(tex_name)
 
         ax.imshow(rgba_img / 255, interpolation="nearest")
         ax.axis("equal")
