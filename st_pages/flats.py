@@ -22,4 +22,4 @@ with st.spinner(f"Drawing {len(flats)} flats..."):
     if len(flats) < len(ax):
         for i in range(len(flats), len(ax)):
             ax[i].axis("off")
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, use_container_width=True, format="png", dpi=300)

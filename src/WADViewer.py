@@ -21,7 +21,7 @@ class WadViewer:
 
     def get_flat_data(self, offset: int, size: int) -> np.ndarray:
         if size == 320 * 200:
-            shape = (320, 200)
+            shape = (200, 320)
 
         elif size % 64 == 0:
             shape = (size // 64, 64)
@@ -40,8 +40,8 @@ class WadViewer:
 
     def draw_flat(self, flat_name: str, ax=None):
 
-        if flat_name not in self.wad.flats.keys():
-            logger.error(f"Patch {flat_name} not found in this WAD.")
+        if flat_name not in self.wad._misc_lumps.keys():
+            logger.error(f"Flat {flat_name} not found in this WAD.")
             return None
 
         output_fig = False
@@ -49,7 +49,7 @@ class WadViewer:
             fig, ax = plt.subplots(figsize=(4, 4))
             output_fig = True
 
-        offset, size = self.wad.flats[flat_name]
+        offset, size = self.wad._misc_lumps[flat_name]
 
         rgb_image = self.get_flat_data(offset, size)
 

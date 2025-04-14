@@ -15,7 +15,7 @@ from app_utils import Page, page_to_icon, page_to_path, img_to_bytes
 def get_titlepic(wad_file, viewer):
     idx = wad_file.lump_names.index("TITLEPIC")
     _, offset, size = wad_file.lumps[idx]
-    rgb = viewer.draw_patch(offset, size)
+    rgb = viewer.draw_patch("TITLEPIC")
 
     return rgb
 
@@ -36,10 +36,12 @@ if "wad" not in st.session_state:
 
 st.header("WAD Viewer")
 
-col1, col2 = st.columns(2)
-with col1:
-    with st.container(border=True):
-        uploaded_file = st.file_uploader("Choose a file")
+
+head_container = st.container(border=False, height=300)
+with head_container:
+    head_col1, head_col2, _ = st.columns([1, 1, 1])
+with head_col1:
+    uploaded_file = st.file_uploader("Choose a file")
 
 if uploaded_file is not None:
     if uploaded_file.name != st.session_state["wad_path"]:
@@ -53,14 +55,20 @@ if uploaded_file is not None:
         for f in os.listdir("output"):
             os.remove(os.path.join("output", f))
 
+        fig, ax = plt.subplots(1, 1, figsize=(3.8, 2))
+
         if "TITLEPIC" in st.session_state["wad"].lump_names:
-            rgb = get_titlepic(st.session_state["wad"], st.session_state["viewer"])
-            height, width = rgb.shape[:2]
-            st.session_state["title_pic"] = {"img": rgb / 255, "width": width}
+            st.session_state.viewer.draw_patch("TITLEPIC", ax=ax)
+        if "TITLE" in st.session_state.wad.lump_names:
+            st.session_state.viewer.draw_flat("TITLE", ax=ax)
+        fig.patch.set_alpha(0)
+        ax.axis("off")
+        st.session_state["title_pic"] = fig
+
 
 if st.session_state["title_pic"] is not None:
-    with col2:
-        st.image(st.session_state["title_pic"]["img"], width=st.session_state["title_pic"]["width"])
+    with head_col2:
+        st.pyplot(st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight")
 
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")
@@ -76,6 +84,8 @@ else:
         pages.append(st.Page("st_pages/musics.py", title="Musics"))
     if st.session_state["wad"].textures is not None:
         pages.append(st.Page("st_pages/textures.py", title="Textures"))
+    if st.session_state["wad"].spritesheets is not None:
+        pages.append(st.Page("st_pages/sprites.py", title="Sprites"))
     pg = st.navigation(pages)
 
     pg.run()

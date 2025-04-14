@@ -19,4 +19,4 @@ with st.spinner(f"Drawing {len(textures)} textures..."):
     if len(textures) < len(ax):
         for i in range(len(textures), len(ax)):
             ax[i].axis("off")
-    st.pyplot(fig)
+    st.pyplot(fig, format="png", dpi=300)

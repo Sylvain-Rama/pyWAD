@@ -38,6 +38,7 @@ class WAD_file:
         logger.info(f"Found a {self.game_type} {self.wad_type}.")
 
         self._maps_lumps, self._misc_lumps = self._parse_lumps()
+        logger.debug(self.lump_names)
 
         self.palette = self._get_palette()
         if self._maps_lumps is not None:
@@ -152,7 +153,8 @@ class WAD_file:
     def _parse_things(self) -> dict[str:str]:
         # Load the THINGS IDs to names mapping
         id2sprite = {}
-        with open(f"src/THINGS/{self.game_type}.csv", newline="") as csvfile:
+        thing_type = "DOOM" if self.game_type == "UDMF" else self.game_type
+        with open(f"src/THINGS/{thing_type}.csv", newline="") as csvfile:
             csvreader = csv.reader(csvfile, delimiter=";", quotechar="|")
             header = next(csvreader)  # Skips the column names
             for row in csvreader:
@@ -233,7 +235,7 @@ class WAD_file:
 
             linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
 
-        elif self.game_type == "HEXEN":
+        elif self.game_type in ["HEXEN", "UDMF"]:
             linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
 
         else:

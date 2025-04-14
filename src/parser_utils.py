@@ -43,4 +43,17 @@ MAPS_ATTRS = {
         "BLOCKMAP",
         "BEHAVIOR",
     ],
+    "UDMF": [
+        "THINGS",
+        "LINEDEFS",
+        "SIDEDEFS",
+        "VERTEXES",
+        "SEGS",
+        "SSECTORS",
+        "NODES",
+        "SECTORS",
+        "REJECT",
+        "BLOCKMAP",
+        "ENDMAP",
+    ],
 }
