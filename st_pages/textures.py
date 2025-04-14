@@ -9,6 +9,7 @@ nrows = len(textures) // ncols + 1 if len(textures) % ncols != 0 else len(textur
 
 fig, ax = plt.subplots(nrows, ncols, figsize=(ncols, nrows))
 ax = ax.ravel()
+fig.patch.set_alpha(0)
 
 with st.spinner(f"Drawing {len(textures)} textures..."):
     for i, texture_name in enumerate(textures):

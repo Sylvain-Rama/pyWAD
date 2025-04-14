@@ -8,6 +8,7 @@ ncols = 8
 nrows = len(flats) // ncols + 1 if len(flats) % ncols != 0 else len(flats) // ncols
 fig, ax = plt.subplots(nrows, ncols, figsize=(ncols, nrows))
 ax = ax.ravel()
+fig.patch.set_alpha(0)
 
 with st.spinner(f"Drawing {len(flats)} flats..."):
     for i, flat_name in enumerate(flats):
