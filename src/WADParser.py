@@ -40,7 +40,6 @@ class WAD_file:
         self._maps_lumps, self._misc_lumps = self._parse_lumps()
 
         self.palette = self._get_palette()
-        self._maps_lumps = self._parse_levels()
         if self._maps_lumps is not None:
             self.id2sprites = self._parse_things()
             self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
@@ -161,34 +160,6 @@ class WAD_file:
 
         logger.info(f"{self.game_type} THINGS loaded.")
         return id2sprite
-
-    def _parse_levels(self) -> dict[str : tuple[int, int]]:
-        # retrieving maps lumps in DOOM1 or DOOM2 formats
-        maps_idx = [i for i, item in enumerate(self.lump_names) if re.search(EXMY_REGEX, item)]
-        if not maps_idx:
-            maps_idx = [i for i, item in enumerate(self.lump_names) if re.search(MAPXY_REGEX, item)]
-            if not maps_idx:
-                logger.info("No levels found in this WAD.")
-                return None
-        n_map_lumps = len(MAPS_ATTRS[self.game_type])
-        map_dict = {}
-        for map_id in maps_idx:
-            lump_subset = self.lumps[map_id + 1 : map_id + n_map_lumps + 1]
-            name_subset = self.lump_names[map_id + 1 : map_id + n_map_lumps + 1]
-
-            map_name = self.lump_names[map_id]
-            map_dict[map_name] = {}
-
-            for map_attr in MAPS_ATTRS[self.game_type]:
-                if map_attr not in name_subset:
-                    logger.warning(f"{map_name} does not have {map_attr} lump.")
-
-                else:
-                    lump_id = name_subset.index(map_attr)
-                    map_dict[map_name][map_attr] = lump_subset[lump_id][1:]
-
-        logger.info(f"Found {len(maps_idx)} level(s) in this WAD.")
-        return map_dict
 
     def _parse_by_markers(
         self, sequence_name: str = "FLATS", m_start: str = "F_START", m_end: str = "F_END"
