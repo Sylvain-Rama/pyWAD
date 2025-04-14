@@ -12,34 +12,39 @@ from WADViewer import WadViewer
 from app_utils import Page, page_to_icon, page_to_path, img_to_bytes
 
 
-def get_titlepic(wad_file, viewer):
-    idx = wad_file.lump_names.index("TITLEPIC")
-    _, offset, size = wad_file.lumps[idx]
-    rgb = viewer.draw_patch("TITLEPIC")
+def get_titlepic(viewer):
+    fig, ax = plt.subplots(1, 1, figsize=(1.9, 1))
+    fig.patch.set_alpha(0)
+    ax.axis("off")
 
-    return rgb
+    if "TITLEPIC" in viewer.wad.lump_names:
+        viewer.draw_patch("TITLEPIC", ax=ax)
+    elif "TITLE" in st.session_state.wad.lump_names:
+        viewer.draw_flat("TITLE", ax=ax)
+    else:
+        return None
 
-
-st.set_page_config(
-    page_title="pyWAD",
-    page_icon="👋",
-    layout="wide",
-)
-
-
-if "wad" not in st.session_state:
-    st.session_state["wad"] = None
-    st.session_state["viewer"] = None
-    st.session_state["wad_path"] = None
-    st.session_state["title_pic"] = None
+    return fig
 
 
+def init_app():
+    if "wad" not in st.session_state:
+        st.session_state["wad"] = None
+        st.session_state["viewer"] = None
+        st.session_state["wad_path"] = None
+        st.session_state["title_pic"] = None
+
+
+st.set_page_config(page_title="pyWAD", page_icon="👋", layout="centered")
+
+
+init_app()
 st.header("WAD Viewer")
 
 
 head_container = st.container(border=False, height=300)
 with head_container:
-    head_col1, head_col2, _ = st.columns([1, 1, 1])
+    head_col1, head_col2 = st.columns([1, 1])
 with head_col1:
     uploaded_file = st.file_uploader("Choose a file")
 
@@ -55,20 +60,12 @@ if uploaded_file is not None:
         for f in os.listdir("output"):
             os.remove(os.path.join("output", f))
 
-        fig, ax = plt.subplots(1, 1, figsize=(3.8, 2))
-
-        if "TITLEPIC" in st.session_state["wad"].lump_names:
-            st.session_state.viewer.draw_patch("TITLEPIC", ax=ax)
-        if "TITLE" in st.session_state.wad.lump_names:
-            st.session_state.viewer.draw_flat("TITLE", ax=ax)
-        fig.patch.set_alpha(0)
-        ax.axis("off")
-        st.session_state["title_pic"] = fig
+        st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
 
 
 if st.session_state["title_pic"] is not None:
     with head_col2:
-        st.pyplot(st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight")
+        st.pyplot(st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight", use_container_width=True)
 
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")

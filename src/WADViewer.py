@@ -7,8 +7,6 @@ import struct
 
 from loguru import logger
 
-# sys.path.append("src/")
-
 import WADParser
 from palettes import MAP_CMAPS
 
@@ -53,7 +51,7 @@ class WadViewer:
 
         rgb_image = self.get_flat_data(offset, size)
 
-        ax.imshow(rgb_image / 255, interpolation="nearest", aspect=1.2)
+        ax.imshow(rgb_image / 255, interpolation="nearest", aspect=1.0)
 
         if output_fig:
             fig.suptitle(flat_name)
@@ -67,7 +65,7 @@ class WadViewer:
         ax=None,
         show_secret: bool = False,
         show_special: bool = True,
-        show_things=False,
+        show_things: bool = False,
         **kwargs,
     ):
         if map_name not in self.wad.maps.keys():

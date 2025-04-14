@@ -38,7 +38,6 @@ class WAD_file:
         logger.info(f"Found a {self.game_type} {self.wad_type}.")
 
         self._maps_lumps, self._misc_lumps = self._parse_lumps()
-        logger.debug(self.lump_names)
 
         self.palette = self._get_palette()
         if self._maps_lumps is not None:

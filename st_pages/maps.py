@@ -3,7 +3,7 @@ from src.palettes import MAP_CMAPS
 from loguru import logger
 
 
-col1, col2, col3, col4 = st.columns([0.2, 0.2, 0.2, 1])
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     chosen_map = st.selectbox("Map", options=sorted(st.session_state["wad"].maps.keys()))
 with col2:
