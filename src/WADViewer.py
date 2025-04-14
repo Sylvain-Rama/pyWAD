@@ -33,7 +33,7 @@ class WadViewer:
         self.wad.bytes.seek(offset)
         flat = self.wad.bytes.read(size)
 
-        indices = np.array(struct.unpack(f"{size}B", flat), dtype=np.uint8).reshape(shape)  # 8-bit index array
+        indices = np.array(struct.unpack(f"{size}B", flat), dtype=np.uint8).reshape(shape)
         rgb_image = self.wad.palette[indices]
 
         return rgb_image
@@ -53,7 +53,7 @@ class WadViewer:
 
         rgb_image = self.get_flat_data(offset, size)
 
-        ax.imshow(rgb_image / 255, interpolation="nearest")
+        ax.imshow(rgb_image / 255, interpolation="nearest", aspect=1.2)
 
         if output_fig:
             fig.suptitle(flat_name)
@@ -189,7 +189,7 @@ class WadViewer:
             idx = self.wad.lump_names.index(patch_name)
 
             _, offset, size = self.wad.lumps[idx]
-            img, alpha, _, _ = self._read_patch_data(offset, size)
+            img, alpha, _, _ = self.get_patch_data(offset, size)
 
             # x and y are flipped as the image will be transposed after
             pixmap = paste_array(pixmap, img, alpha, y, x)
@@ -210,18 +210,20 @@ class WadViewer:
         output_fig = ax is None
         if ax is None:
             fig, ax = plt.subplots(figsize=(10, 10))
+            fig.patch.set_alpha(0)
 
-        rgba_img = self._get_tex_rgba(tex_name)
+        rgba_img = self.get_tex_data(tex_name)
 
-        ax.imshow(rgba_img / 255, interpolation="nearest")
+        ax.imshow(rgba_img / 255, interpolation="nearest", aspect=1.2)
         ax.axis("equal")
+        ax.patch.set_alpha(0)
 
         if output_fig:
             ax.axis("off")
             fig.tight_layout(pad=1.2)
             return fig
 
-    def _read_patch_data(self, offset: int, size: int) -> np.ndarray:
+    def get_patch_data(self, offset: int, size: int) -> np.ndarray:
         # See https://doomwiki.org/wiki/Picture_format for documentation
 
         self.wad.bytes.seek(offset)
@@ -254,28 +256,29 @@ class WadViewer:
 
         return image_data, image_alpha, left_offset, top_offset
 
-    def draw_patch(self, offset: int, size: int):
+    def draw_patch(self, patch_name: str, ax=None):
 
-        img_data, alpha, left, top = self._read_patch_data(offset, size)
+        if patch_name not in self.wad._misc_lumps.keys():
+            raise ValueError("Invalid Patch name")
 
-        alpha = alpha.T[:, :, np.newaxis] * np.ones((1, 1, 4))
-        rgb_img = self.wad.palette[img_data.T]
-        rgba_img = rgb_img * alpha
+        output_fig = False
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(4, 4))
+            output_fig = True
 
-        return rgba_img
+        offset, size = self.wad._misc_lumps[patch_name]
 
-    def draw_sprite(self, sprite_name: str, ax=None) -> np.array:
-        """Method to draw a single patch, with alpha channel."""
-        if sprite_name not in self.wad.sprites.keys():
-            raise ValueError(f"Unknown patch name {sprite_name} in this WAD.")
-
-        img_data, alpha, _, _ = self._read_patch_data(*self.wad.sprites[sprite_name])
+        img_data, alpha, left, top = self.get_patch_data(offset, size)
 
         alpha = alpha.T[:, :, np.newaxis] * np.ones((1, 1, 4))
         rgb_img = self.wad.palette[img_data.T]
         rgba_img = rgb_img * alpha
 
-        return rgba_img
+        ax.imshow(rgba_img / 255, interpolation="nearest", aspect=1.2)
+        if output_fig:
+            fig.suptitle(patch_name)
+            fig.tight_layout(pad=1.2)
+            return fig
 
 
 if __name__ == "__main__":
