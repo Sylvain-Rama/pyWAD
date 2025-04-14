@@ -24,4 +24,4 @@ with st.spinner(f"Drawing {len(sprite_list)} sprites..."):
     if len(sprite_list) < len(ax):
         for i in range(len(sprite_list), len(ax)):
             ax[i].axis("off")
-    st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, use_container_width=True, format="png", dpi=300)
