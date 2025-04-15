@@ -187,26 +187,20 @@ class WAD_file:
                 # Adding a warning just in case.
                 if name in res_set:
                     logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
-                res_set.append(name)
+                res_set.add(name)
 
         logger.info(f"Found {len(res_set)} {sequence_name} in this WAD.")
         return res_set
 
     def _get_spritesheets(self) -> list[tuple[str, int, int]]:
-        """Convenient method to group every sprite by their names, to define the animation sequence."""
-        sprite_names = set([x[:4] for x in self.sprites.keys()])
+        """Convenient method to group every sprite by their names."""
+        sprite_names = set([x[:4] for x in self.sprites])
 
         sprite_dict = {}
         for sprite_name in sprite_names:
-            sprite_dict[sprite_name] = [x for x in self.sprites.keys() if x.startswith(sprite_name)]
+            sprite_dict[sprite_name] = sorted([x for x in self.sprites if x.startswith(sprite_name)])
 
-        res = {}
-        for name, sprites in sprite_dict.items():
-
-            res[name] = [self.lumps[self.lump_names.index(sprite)] for sprite in sprites]
-            res[name] = sorted(res[name], key=lambda x: x[0])
-
-        return res
+        return sprite_dict
 
     def _parse_map(self, map_name: str):
 
