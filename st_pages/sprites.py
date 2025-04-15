@@ -15,7 +15,7 @@ fig.patch.set_alpha(0)
 
 
 with st.spinner(f"Drawing {len(sprite_list)} sprites..."):
-    for i, (name, offset, size) in enumerate(sprite_list):
+    for i, name in enumerate(sprite_list):
 
         st.session_state["viewer"].draw_patch(name, ax=ax[i])
         ax[i].axis("off")
