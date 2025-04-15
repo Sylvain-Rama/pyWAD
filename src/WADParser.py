@@ -179,18 +179,18 @@ class WAD_file:
 
         sel_lumps = self.lumps[start_idx : end_idx + 1]
 
-        res_dict = {}
+        res_set = set()
         for name, offset, size in sel_lumps:
             # Some lumps are folder markers, with a size of 0. Ignoring them as they don't have any image data.
             if size > 0:
                 # But because of this folder structure, in theory 2 different lumps could have the same name.
                 # Adding a warning just in case.
-                if name in res_dict.keys():
+                if name in res_set:
                     logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
-                res_dict[name] = (offset, size)
+                res_set.append(name)
 
-        logger.info(f"Found {len(res_dict.keys())} {sequence_name} in this WAD.")
-        return res_dict
+        logger.info(f"Found {len(res_set)} {sequence_name} in this WAD.")
+        return res_set
 
     def _get_spritesheets(self) -> list[tuple[str, int, int]]:
         """Convenient method to group every sprite by their names, to define the animation sequence."""

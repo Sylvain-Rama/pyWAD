@@ -35,7 +35,7 @@ def init_app():
         st.session_state["title_pic"] = None
 
 
-st.set_page_config(page_title="pyWAD", page_icon="👋", layout="centered")
+st.set_page_config(page_title="pyWAD", page_icon="media/skull.png", layout="centered")
 
 
 init_app()
@@ -46,7 +46,7 @@ head_container = st.container(border=False, height=300)
 with head_container:
     head_col1, head_col2 = st.columns([1, 1])
 with head_col1:
-    uploaded_file = st.file_uploader("Choose a file")
+    uploaded_file = st.file_uploader("Choose a file", accept_multiple_files=False)
 
 if uploaded_file is not None:
     if uploaded_file.name != st.session_state["wad_path"]:
@@ -54,13 +54,11 @@ if uploaded_file is not None:
         st.session_state["wad"] = wad
         st.session_state["wad_path"] = uploaded_file.name
         st.session_state["viewer"] = WadViewer(wad)
-        st.session_state["title_pic"] = None
+        st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
 
         # Cleaning the output folder.
         for f in os.listdir("output"):
             os.remove(os.path.join("output", f))
-
-        st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
 
 
 if st.session_state["title_pic"] is not None:
