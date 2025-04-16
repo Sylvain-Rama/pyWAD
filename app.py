@@ -57,7 +57,8 @@ if uploaded_file is not None:
 
         # Cleaning the output folder.
         for f in os.listdir("output"):
-            os.remove(os.path.join("output", f))
+            if f != ".gitkeep":
+                os.remove(os.path.join("output", f))
 
 
 if st.session_state["title_pic"] is not None:
