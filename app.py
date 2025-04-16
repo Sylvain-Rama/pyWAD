@@ -9,11 +9,10 @@ sys.path.append("src/")
 
 from WADParser import WAD_file
 from WADViewer import WadViewer
-from app_utils import Page, page_to_icon, page_to_path, img_to_bytes
 
 
 def get_titlepic(viewer):
-    fig, ax = plt.subplots(1, 1, figsize=(1.9, 1))
+    fig, ax = plt.subplots(1, 1, figsize=(1.6, 1))
     fig.patch.set_alpha(0)
     ax.axis("off")
 
