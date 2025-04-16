@@ -37,7 +37,7 @@ class WadViewer:
 
         return rgb_image
 
-    def draw_flat(self, flat_name: str, ax: mpl.axes | None = None) -> plt.fig | None:
+    def draw_flat(self, flat_name: str, ax: mpl.axes.Axes | None = None) -> plt.figure:
 
         if flat_name not in self.wad._misc_lumps.keys():
             logger.error(f"Flat {flat_name} not found in this WAD.")
@@ -63,12 +63,12 @@ class WadViewer:
         self,
         map_name: str,
         palette: str = "OMGIFOL",
-        ax: mpl.axes | None = None,
+        ax: mpl.axes.Axes | None = None,
         show_secret: bool = False,
         show_special: bool = True,
         show_things: bool = False,
         **kwargs,
-    ) -> plt.figure | None:
+    ) -> plt.figure:
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
 
@@ -201,7 +201,7 @@ class WadViewer:
 
         return rgba_img
 
-    def draw_tex(self, tex_name: str, ax: mpl.axes | None = None) -> plt.figure | None:
+    def draw_tex(self, tex_name: str, ax: mpl.axes.Axes | None = None) -> plt.figure:
 
         if tex_name not in self.wad.textures.keys():
             raise ValueError(f"Texture {tex_name} not found in WAD.")
@@ -255,7 +255,7 @@ class WadViewer:
 
         return image_data, image_alpha, left_offset, top_offset
 
-    def draw_patch(self, patch_name: str, ax: mpl.axes | None = None) -> plt.figure | None:
+    def draw_patch(self, patch_name: str, ax: mpl.axes.Axes | None = None) -> plt.figure:
 
         if patch_name not in self.wad._misc_lumps.keys():
             raise ValueError("Invalid Patch name")

@@ -192,7 +192,7 @@ class WAD_file:
                 res_set.add(name)
 
         logger.info(f"Found {len(res_set)} {sequence_name} between {m_start} and {m_end} in this WAD.")
-        return res_set
+        return list(res_set)
 
     def _get_spritesheets(self) -> list[tuple[str, int, int]]:
         """Convenient method to group every sprite by their names."""
@@ -338,7 +338,7 @@ class WAD_file:
         return textures
 
     def _gather_musics(self) -> list[str]:
-        music_lumps = [lump for lump in self.lumps if (lump[0].startswith("D_") | lump[0].startswith("MUS_"))]
+        music_lumps = [lump for lump in self.lump_names if (lump.startswith("D_") | lump.startswith("MUS_"))]
 
         if len(music_lumps) == 0:
             logger.info(f"No music found in this {self.wad_type}.")
