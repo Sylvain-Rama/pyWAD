@@ -103,6 +103,7 @@ class WAD_file:
             maps_attrs_len = np.diff(maps_idxs)[0] - 1
 
         i = 0
+        duplicates = []
         while i < len(self.lumps):
             name, offset, size = self.lumps[i]
             if name in maps_names:
@@ -114,10 +115,11 @@ class WAD_file:
             else:
                 i += 1
                 if name in misc_lumps:
-                    logger.info(f"Duplicate lump name: {name}")
+                    duplicates.append(name)
                     continue
                 misc_lumps[name] = (offset, size)
-
+        if duplicates:
+            logger.info(f"Found {len(duplicates)} duplicated lumps in this {self.wad_type}.")
         return maps_lumps, misc_lumps
 
     def _lump_data(self, offset: int, size: int) -> bytes:

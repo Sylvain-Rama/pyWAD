@@ -4,7 +4,7 @@ from loguru import logger
 
 spritesheets = sorted(st.session_state["wad"].spritesheets.keys())
 
-sprite_name = st.selectbox("Choose sprite", options=spritesheets)
+sprite_name = st.selectbox("Choose spritesheet", options=spritesheets)
 
 sprite_list = st.session_state["wad"].spritesheets[sprite_name]
 ncols = 5
