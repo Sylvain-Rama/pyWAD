@@ -15,6 +15,8 @@ To plot the corresponding map and save it to the /output folder.
 ## Streamlit app
 To get a UI:
 > streamlit run app.py
+
+[Or simply click here](https://wadviewer.streamlit.app/)
  
 ## More
 Check the pyWAD_Demo notebook!
