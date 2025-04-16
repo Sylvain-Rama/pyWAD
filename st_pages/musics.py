@@ -9,7 +9,7 @@ if "player" not in st.session_state:
 
 col1, col2, col3, col4, _ = st.columns([2, 1, 1, 3, 3], vertical_alignment="bottom")
 
-music_names = list(st.session_state["wad"].musics.keys())
+music_names = st.session_state["wad"].musics
 
 with col1:
     chosen_music = st.selectbox("Music", music_names)
@@ -17,7 +17,7 @@ temp_name = f"output/{chosen_music}.mus"
 midi_name = f"output/{chosen_music}.mid"
 
 if f"{chosen_music}.mid" not in os.listdir("output"):
-    st.session_state["wad"].save_mus(chosen_music, temp_name)
+    st.session_state["wad"].export_music(chosen_music, temp_name)
     m2m = Mus2Mid(temp_name)
     m2m.to_midi(midi_name)
     os.remove(temp_name)

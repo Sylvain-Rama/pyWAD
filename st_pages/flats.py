@@ -2,7 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from loguru import logger
 
-flats = st.session_state["wad"].flats.keys()
+flats = st.session_state["wad"].flats
 
 ncols = 8
 nrows = len(flats) // ncols + 1 if len(flats) % ncols != 0 else len(flats) // ncols
