@@ -19,4 +19,4 @@ To get a UI:
 [Or simply click here](https://wadviewer.streamlit.app/)
  
 ## More
-Check the pyWAD_Demo notebook!
+Check the [pyWAD_Demo](https://github.com/Sylvain-Rama/pyWAD/blob/main/pyWAD_Demo.ipynb) notebook!
