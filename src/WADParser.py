@@ -4,7 +4,6 @@ import struct
 import sys
 from collections import defaultdict
 from loguru import logger
-import re
 import numpy as np
 
 """Sources:
@@ -14,7 +13,7 @@ https://www.gamers.org/dhs/helpdocs/dmsp1666.html
 """
 
 sys.path.append("src/")
-from src.parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
+from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
 from palettes import DEFAULT_PALETTE
 
 

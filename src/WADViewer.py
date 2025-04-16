@@ -283,18 +283,10 @@ class WadViewer:
 if __name__ == "__main__":
 
     args = argparse.ArgumentParser()
-    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.wad")
-    args.add_argument(
-        "--command",
-        "-c",
-        type=str,
-        help="Command to run",
-        choices=["draw_map", "draw_tex", "get_music"],
-        default="draw_map",
-    )
+    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.WAD")
+    args.add_argument("--command", "-c", type=str, help="Command to run", choices=["draw_map"], default="draw_map")
     args.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
     args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
-    args.add_argument("--texture", "-t", type=str, help="Texture name", default="AASTINKY")
 
     args = args.parse_args()
     wad = WADParser.open_wad_file(args.wad)
@@ -309,13 +301,3 @@ if __name__ == "__main__":
         for map_name in maps_to_draw:
             fig = viewer.draw_map(map_name, palette=args.palette)
             fig.savefig(f"output/{map_name}.png", bbox_inches="tight", dpi=300)
-
-    elif args.command == "draw_tex":
-        if args.texture == "*":
-            textures_to_draw = wad.textures.keys()
-        else:
-            textures_to_draw = [args.texture]
-
-        for texture_name in textures_to_draw:
-            fig = viewer.draw_tex(wad, texture_name)
-            fig.savefig(f"output/{texture_name}.png", bbox_inches="tight", dpi=300)
