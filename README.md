@@ -4,6 +4,8 @@ Tested with DOOM, DOOM2, Heretic, Hexen and more modern wads such as Brigandine,
 
 It will plot maps, sprites, flats, and can translate .MUS music formats to MIDI.
 
+![Example of plotted maps from DOOM.WAD](https://github.com/Sylvain-Rama/pyWAD/blob/main/media/plotted_maps.png)
+
 ## CLI:
 Simply type
 > python src/WADViewer.py -w [Link to a WAD] -m [Name of a map]
