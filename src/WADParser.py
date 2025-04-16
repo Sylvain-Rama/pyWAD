@@ -189,7 +189,7 @@ class WAD_file:
                     logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
                 res_set.add(name)
 
-        logger.info(f"Found {len(res_set)} {sequence_name} in this WAD.")
+        logger.info(f"Found {len(res_set)} {sequence_name} between {m_start} and {m_end} in this WAD.")
         return res_set
 
     def _get_spritesheets(self) -> list[tuple[str, int, int]]:
@@ -202,7 +202,7 @@ class WAD_file:
 
         return sprite_dict
 
-    def _parse_map(self, map_name: str):
+    def _parse_map(self, map_name: str) -> dict:
 
         def filter_flags_by_bit(flags: np.array, bit_position: int) -> np.array:
             """
@@ -267,7 +267,7 @@ class WAD_file:
 
         return map_info
 
-    def _parse_patches(self):
+    def _parse_patches(self) -> list:
         lump = self._lump_data_by_name("PNAMES")
 
         n_patches = int.from_bytes(lump[0:4], byteorder="little")
@@ -277,7 +277,7 @@ class WAD_file:
             patches.append(patch_name)
         return patches
 
-    def _parse_textures(self, lump_name, patches):
+    def _parse_textures(self, lump_name: str, patches: list) -> dict:
         textures = {}
 
         lump_id = self.lump_names.index(lump_name)
@@ -318,7 +318,7 @@ class WAD_file:
 
         return textures
 
-    def _gather_textures(self):
+    def _gather_textures(self) -> dict:
         tex_lumps = [lump for lump in self.lump_names if TEX_REGEX.match(lump)]
 
         if (len(tex_lumps) == 0) | ("PNAMES" not in self.lump_names):
@@ -335,26 +335,24 @@ class WAD_file:
         logger.info(f"Found {len(textures)} textures in {len(tex_lumps)} texture lumps.")
         return textures
 
-    def _gather_musics(self):
+    def _gather_musics(self) -> list[str]:
         music_lumps = [lump for lump in self.lumps if (lump[0].startswith("D_") | lump[0].startswith("MUS_"))]
 
         if len(music_lumps) == 0:
             logger.info(f"No music found in this {self.wad_type}.")
             return None
 
-        music_lumps = {k: (offset, size) for k, offset, size in music_lumps}
-
         logger.info(f"Found {len(music_lumps)} music lumps.")
 
         return music_lumps
 
-    def save_mus(self, music_name: str, output_path: str = None):
-        if music_name not in self.musics.keys():
+    def export_music(self, music_name: str, output_path: str = None):
+        if music_name not in self.musics:
             raise ValueError(f"Music {music_name} not found in this {self.wad_type}.")
         if output_path is None:
             output_path = "output/" + music_name + ".mus"
 
-        offset, size = self.musics[music_name]
+        offset, size = self._misc_lumps[music_name]
         self.bytes.seek(offset)
         with open(output_path, "wb") as f:
             f.write(self.bytes.read(size))
@@ -365,7 +363,7 @@ def open_wad_file(wad_path: str) -> WAD_file:
     """Open a WAD file and return a WAD_file object."""
 
     if not os.path.isfile(wad_path):
-        raise ValueError(f"No file detected at {wad_path}")
+        raise ValueError(f"No file detected at {wad_path}.")
 
     else:
         return WAD_file(open(wad_path, "rb"))
