@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from matplotlib.collections import LineCollection
@@ -36,7 +37,7 @@ class WadViewer:
 
         return rgb_image
 
-    def draw_flat(self, flat_name: str, ax=None):
+    def draw_flat(self, flat_name: str, ax: mpl.axes | None = None) -> plt.fig | None:
 
         if flat_name not in self.wad._misc_lumps.keys():
             logger.error(f"Flat {flat_name} not found in this WAD.")
@@ -62,12 +63,12 @@ class WadViewer:
         self,
         map_name: str,
         palette: str = "OMGIFOL",
-        ax=None,
+        ax: mpl.axes | None = None,
         show_secret: bool = False,
         show_special: bool = True,
         show_things: bool = False,
         **kwargs,
-    ):
+    ) -> plt.figure | None:
         if map_name not in self.wad.maps.keys():
             raise ValueError(f"Map {map_name} not found in this WAD.")
 
@@ -141,8 +142,8 @@ class WadViewer:
             fig.tight_layout(pad=0.2)
             return fig
 
-    def get_tex_data(self, tex_name: str) -> np.array:
-        def paste_array(original: np.array, paste: np.array, alpha: np.array, x: int, y: int):
+    def get_tex_data(self, tex_name: str) -> np.ndarray:
+        def paste_array(original: np.ndarray, paste: np.ndarray, alpha: np.ndarray, x: int, y: int):
             """
             Pastes a 2D numpy array into another 2D numpy array at the specified (x, y) position.
             Allows for negative x and y values, and only pastes where the alpha channel is > 0.
@@ -200,7 +201,7 @@ class WadViewer:
 
         return rgba_img
 
-    def draw_tex(self, tex_name: str, ax=None) -> plt.Figure | None:
+    def draw_tex(self, tex_name: str, ax: mpl.axes | None = None) -> plt.figure | None:
 
         if tex_name not in self.wad.textures.keys():
             raise ValueError(f"Texture {tex_name} not found in WAD.")
@@ -254,7 +255,7 @@ class WadViewer:
 
         return image_data, image_alpha, left_offset, top_offset
 
-    def draw_patch(self, patch_name: str, ax=None):
+    def draw_patch(self, patch_name: str, ax: mpl.axes | None = None) -> plt.figure | None:
 
         if patch_name not in self.wad._misc_lumps.keys():
             raise ValueError("Invalid Patch name")

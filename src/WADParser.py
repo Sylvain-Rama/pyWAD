@@ -85,7 +85,7 @@ class WAD_file:
 
         return lumps
 
-    def _parse_lumps(self):
+    def _parse_lumps(self) -> tuple[dict, dict]:
         misc_lumps = {}
         maps_lumps = {}
         lump_names = [x[0] for x in self.lumps]
