@@ -19,8 +19,9 @@ MIDI_PERCUSSION_CHAN = 9
 MUS_PERCUSSION_CHAN = 15
 MUS_ID = b"MUS\x1a"
 MIDI_ID = b"MThd"
+OGG_ID = b"OggS"
 
-FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid"}
+FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid", OGG_ID: ".ogg"}
 
 
 # MUS event codes
