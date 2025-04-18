@@ -5,9 +5,13 @@ from typing import BinaryIO
 from loguru import logger
 
 
-"""Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
+"""
+Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
 See https://svn.prboom.org/repos/tags/prboom-plus-2.5.0.1/src/mus2mid.c
-Added MIDI management by simply saving the MIDI lump to a .mid."""
+Added MIDI management by simply saving the MIDI lump to a .mid.
+Many thanks to https://github.com/KurtDing for his help on MUS conversion to MIDI in Labview.
+
+"""
 
 # Constants
 NUM_CHANNELS = 16
