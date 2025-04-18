@@ -17,6 +17,8 @@ To get a UI:
 > streamlit run app.py
 
 [Or simply click here](https://wadviewer.streamlit.app/)
+
+![Brigandine MAP01](https://github.com/Sylvain-Rama/pyWAD/blob/main/media/brigandine_dark.png)
  
 ## More
 Check the [pyWAD_Demo](https://github.com/Sylvain-Rama/pyWAD/blob/main/pyWAD_Demo.ipynb) notebook!
