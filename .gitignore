@@ -180,4 +180,4 @@ output/*.png
 # Soundfonts files
 *.sf2
 test*.*
-
+fluidsynth/
