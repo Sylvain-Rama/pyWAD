@@ -172,7 +172,7 @@ cython_debug/
 
 # Local WAD files
 WADS/*.WAD
-test*.ipynb
+*.ipynb
 output/*.png
 *.html
 *.mus
