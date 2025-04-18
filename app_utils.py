@@ -10,7 +10,7 @@ def image_to_base64(img_path):
 
 banner_html = """
 <div class="banner">
-    <img src=""" + image_to_base64("media\header.png") + """ alt="WadViewer Banner">
+    <img src=""" + image_to_base64("media/header.png") + """ alt="WadViewer Banner">
 </div>
 <style>
     .banner {

@@ -3,7 +3,6 @@ import os
 from loguru import logger
 import sys
 import matplotlib.pyplot as plt
-import base64
 
 
 sys.path.append("src/")
