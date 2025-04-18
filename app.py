@@ -68,6 +68,7 @@ if st.session_state["title_pic"] is not None:
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")
     st.write("You can download some WAD files from the [Doom Wiki](https://doomwiki.org/wiki/Category:Doom_II_WADs).")
+    st.write("The full version of the app is available on [Github](https://github.com/Sylvain-Rama/pyWAD) ")
 
 else:
     pages = []
