@@ -3,12 +3,14 @@ import os
 from loguru import logger
 import sys
 import matplotlib.pyplot as plt
+import base64
 
 
 sys.path.append("src/")
 
 from WADParser import WAD_file
 from WADViewer import WadViewer
+from app.utils import banner_html
 
 
 def get_titlepic(viewer):
@@ -35,6 +37,7 @@ def init_app():
 
 
 st.set_page_config(page_title="pyWAD", page_icon="media/skull.png", layout="centered")
+st.components.v1.html(banner_html)
 
 
 init_app()
