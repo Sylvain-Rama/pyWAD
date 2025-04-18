@@ -35,7 +35,7 @@ def init_app():
         st.session_state["title_pic"] = None
 
 
-st.set_page_config(page_title="pyWAD", page_icon="media/skull.png", layout="centered")
+st.set_page_config(page_title="WAD Viewer", page_icon="media/skull.png", layout="centered")
 st.components.v1.html(banner_html)
 
 
