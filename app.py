@@ -10,7 +10,7 @@ sys.path.append("src/")
 
 from WADParser import WAD_file
 from WADViewer import WadViewer
-from app.utils import banner_html
+from app_utils import banner_html
 
 
 def get_titlepic(viewer):
