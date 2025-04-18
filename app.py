@@ -18,7 +18,7 @@ def get_titlepic(viewer):
 
     if "TITLEPIC" in viewer.wad.lump_names:
         viewer.draw_patch("TITLEPIC", ax=ax)
-    elif "TITLE" in st.session_state.wad.lump_names:
+    elif "TITLE" in viewer.wad.lump_names:
         viewer.draw_flat("TITLE", ax=ax)
     else:
         return None
