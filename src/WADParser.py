@@ -15,6 +15,7 @@ https://www.gamers.org/dhs/helpdocs/dmsp1666.html
 sys.path.append("src/")
 from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
 from palettes import DEFAULT_PALETTE
+from mus2mid import MUSIC_FORMATS
 
 
 class WAD_file:
@@ -347,17 +348,25 @@ class WAD_file:
 
         return music_lumps
 
-    def export_music(self, music_name: str, output_path: str = None):
-        if music_name not in self.musics:
+    def export_music(self, music_name: str):
+        if music_name not in self._misc_lumps:
             raise ValueError(f"Music {music_name} not found in this {self.wad_type}.")
-        if output_path is None:
-            output_path = "output/" + music_name + ".mus"
 
         offset, size = self._misc_lumps[music_name]
+
+        self.bytes.seek(offset)
+        header_id = struct.unpack("<4s", self.bytes.read(4))[0]
+        if header_id not in MUSIC_FORMATS.keys():
+            raise ValueError(f"Music format not reconised: {header_id}")
+
+        output_path = "output/" + music_name + MUSIC_FORMATS[header_id]
+
         self.bytes.seek(offset)
         with open(output_path, "wb") as f:
             f.write(self.bytes.read(size))
         logger.info(f"Saved music {music_name} to {output_path}.")
+
+        return output_path
 
 
 def open_wad_file(wad_path: str) -> WAD_file:
