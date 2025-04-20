@@ -5,6 +5,7 @@ import sys
 from collections import defaultdict
 from loguru import logger
 import numpy as np
+import wave
 
 """Sources:
 https://doomwiki.org/wiki/WAD
@@ -50,6 +51,7 @@ class WAD_file:
 
         self.textures = self._gather_textures()
         self.musics = self._gather_musics()
+        self.sounds = self._gather_sounds()
 
     def _get_directory(self, bytestring: bytes):
         """Get the directory of the WAD file."""
@@ -348,8 +350,8 @@ class WAD_file:
 
         return music_lumps
 
-    def export_music(self, music_name: str):
-        if music_name not in self._misc_lumps:
+    def export_music(self, music_name: str) -> str:
+        if music_name not in self.lump_names:
             raise ValueError(f"Music {music_name} not found in this {self.wad_type}.")
 
         offset, size = self._misc_lumps[music_name]
@@ -357,7 +359,7 @@ class WAD_file:
         self.bytes.seek(offset)
         header_id = struct.unpack("<4s", self.bytes.read(4))[0]
         if header_id not in MUSIC_FORMATS.keys():
-            raise ValueError(f"Music format not reconised: {header_id}")
+            raise ValueError(f"Music format not recognised: {header_id}")
 
         output_path = "output/" + music_name + MUSIC_FORMATS[header_id]
 
@@ -367,6 +369,27 @@ class WAD_file:
         logger.info(f"Saved music {music_name} to {output_path}.")
 
         return output_path
+
+    def _gather_sounds(self):
+        sounds = [x for x in self.lump_names if x.startswith("DS")]
+        logger.info(f"Fould {len(sounds)} sounds in this {self.wad_type}.")
+        return sounds
+
+    def export_sound(self, sound_name: str) -> str:
+        if sound_name not in self._misc_lumps.keys():
+            raise ValueError(f"Sound {sound_name} not found in this {self.wad_type}.")
+
+        lump_data = self._lump_data_by_name(sound_name)
+        sample_rate = struct.unpack_from("<H", lump_data, 2)[0]
+        sample_count = struct.unpack_from("<I", lump_data, 4)[0]
+
+        samples = lump_data[8 : 8 + sample_count]
+
+        with wave.open(f"output/{sound_name}.wav", "wb") as wav_file:
+            wav_file.setnchannels(1)
+            wav_file.setsampwidth(1)  # 8-bit
+            wav_file.setframerate(sample_rate)
+            wav_file.writeframes(samples)
 
 
 def open_wad_file(wad_path: str) -> WAD_file:

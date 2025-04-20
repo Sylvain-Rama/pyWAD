@@ -175,12 +175,12 @@ WADS/*.WAD
 *.ipynb
 output/*.png
 *.html
+
+# Sound things
 *.mus
 *.mid
 *.ogg
-# Soundfonts files
+*.wav
 fluidsynth/
 *.sf2
-test*.*
 fluidsynth/
-
