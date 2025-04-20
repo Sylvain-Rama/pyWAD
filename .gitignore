@@ -182,4 +182,5 @@ output/*.png
 fluidsynth/
 *.sf2
 test*.*
+fluidsynth/
 

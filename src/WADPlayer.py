@@ -10,6 +10,8 @@ Example usage:
     player.play()
     time.sleep(10)  
     player.stop()
+
+Many thanks to https://github.com/KurtDing for his help on the MIDI player.
     
 """
 

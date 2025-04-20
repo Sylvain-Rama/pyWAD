@@ -5,9 +5,13 @@ from typing import BinaryIO
 from loguru import logger
 
 
-"""Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
+"""
+Translation to Python and slight adaptation of mus2mid.c by Ben Ryves, 2006. 
 See https://svn.prboom.org/repos/tags/prboom-plus-2.5.0.1/src/mus2mid.c
-Added MIDI management by simply saving the MIDI lump to a .mid."""
+Added MIDI management by simply saving the MIDI lump to a .mid.
+Many thanks to https://github.com/KurtDing for his help on MUS conversion to MIDI in Labview.
+
+"""
 
 # Constants
 NUM_CHANNELS = 16
@@ -15,8 +19,9 @@ MIDI_PERCUSSION_CHAN = 9
 MUS_PERCUSSION_CHAN = 15
 MUS_ID = b"MUS\x1a"
 MIDI_ID = b"MThd"
+OGG_ID = b"OggS"
 
-FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid"}
+MUSIC_FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid", OGG_ID: ".ogg"}
 
 
 # MUS event codes
@@ -65,7 +70,7 @@ class Mus2Mid:
         with open(mus_path, "rb") as musinput:
             header_id = struct.unpack("<4s", musinput.read(4))[0]
 
-            if header_id not in FORMATS.keys():
+            if header_id != MUS_ID:
                 raise ValueError(f"Unsupported file format: {header_id}")
             else:
                 self.mus_path = mus_path
@@ -217,19 +222,14 @@ class Mus2Mid:
         # Write track size
         midioutput.seek(18)
         midioutput.write(struct.pack("<I", self.tracksize))
-        logger.info(f"Track size written: {self.tracksize} vs {musfileheader.scorelength}")
 
-    def to_midi(self, output_path: str) -> None:
+    def to_midi(self) -> None:
+        output_path = self.mus_path[:-4] + ".mid"
 
         if self.id == MUS_ID:
             with open(self.mus_path, "rb") as musinput, open(output_path, "wb") as midioutput:
                 self.mus2mid(musinput, midioutput)
                 logger.info(f"Exported MUS {self.mus_path} as a MIDI file to {output_path}.")
-
-        elif self.id == MIDI_ID:
-            with open(self.mus_path, "rb") as musinput, open(output_path, "wb") as midioutput:
-                midioutput.write(musinput.read())
-                logger.info(f"Exported MIDI {self.mus_path} as a MIDI file to {output_path}.")
-
+            return output_path
         else:
             raise ValueError(f"Unsupported file format: {self.id}")
