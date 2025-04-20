@@ -84,6 +84,8 @@ else:
         pages.append(st.Page("st_pages/textures.py", title="Textures"))
     if st.session_state["wad"].spritesheets is not None:
         pages.append(st.Page("st_pages/sprites.py", title="Sprites"))
+    if st.session_state["wad"].sounds is not None:
+        pages.append(st.Page("st_pages/sounds.py", title="Sounds"))
     pg = st.navigation(pages)
 
     pg.run()

@@ -11,7 +11,7 @@ if "music_path" not in st.session_state:
     st.session_state["chosen_music"] = None
     st.session_state["current_music"] = None
 
-col1, col2, col3, col4, _ = st.columns([2, 1, 1, 3, 3], vertical_alignment="bottom")
+col1, col2, col3, col4 = st.columns([2, 1, 1, 1], vertical_alignment="bottom")
 
 music_names = st.session_state["wad"].musics
 

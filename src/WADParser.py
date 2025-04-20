@@ -366,14 +366,14 @@ class WAD_file:
         self.bytes.seek(offset)
         with open(output_path, "wb") as f:
             f.write(self.bytes.read(size))
-        logger.info(f"Saved music {music_name} to {output_path}.")
+        logger.info(f"Exported music {music_name} to {output_path}.")
 
         return output_path
 
     def _gather_sounds(self):
         sounds = [x for x in self.lump_names if x.startswith("DS")]
-        logger.info(f"Fould {len(sounds)} sounds in this {self.wad_type}.")
-        return sounds
+        logger.info(f"Found {len(sounds)} sounds in this WAD.")
+        return sounds if sounds else None
 
     def export_sound(self, sound_name: str) -> str:
         if sound_name not in self._misc_lumps.keys():
@@ -383,13 +383,15 @@ class WAD_file:
         sample_rate = struct.unpack_from("<H", lump_data, 2)[0]
         sample_count = struct.unpack_from("<I", lump_data, 4)[0]
 
-        samples = lump_data[8 : 8 + sample_count]
-
-        with wave.open(f"output/{sound_name}.wav", "wb") as wav_file:
+        samples = lump_data[8 : 8 + sample_count]  # removing the padding.
+        output_path = f"output/{sound_name}.wav"
+        with wave.open(output_path, "wb") as wav_file:
             wav_file.setnchannels(1)
             wav_file.setsampwidth(1)  # 8-bit
             wav_file.setframerate(sample_rate)
             wav_file.writeframes(samples)
+        logger.info(f"Exported sound {sound_name} to {output_path}.")
+        return output_path
 
 
 def open_wad_file(wad_path: str) -> WAD_file:
