@@ -177,7 +177,9 @@ output/*.png
 *.html
 *.mus
 *.mid
+*.ogg
 # Soundfonts files
+fluidsynth/
 *.sf2
 test*.*
 
