@@ -31,12 +31,12 @@ with col1:
         else:
             st.session_state["music_path"] = music_path
 
-        logger.debug(music_path)
         st.session_state["chosen_music"] = chosen_music
 
 
 # Create the player if it's not created yet or if the music is changed
-if st.session_state["music_path"].endswith(".mid"):
+if st.session_state["music_path"].endswith(".mid") & (os.name == "nt"):
+
     if st.session_state["player"] is None:
         try:
             st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
@@ -62,7 +62,11 @@ if st.session_state["music_path"].endswith(".mid"):
         if st.session_state["player"] is not None:
             st.session_state["player"].stop()
 
+
 elif st.session_state["music_path"].endswith(".ogg"):
     st.session_state["player"] = None
     with col2:
         st.audio(st.session_state["music_path"])
+
+else:
+    st.error(f"This player wors only for ogg format or midi format on Windows.")
