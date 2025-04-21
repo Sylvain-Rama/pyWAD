@@ -245,6 +245,12 @@ class WAD_file:
         specials = linedefs[:, 3]
 
         map_info["block"] = lines[filter_flags_by_bit(flags, 0)]  # Impassable bit is 0th bit (1 << 0)
+
+        # Some WADs don't have all their linedefs flags properly set.
+        # We consider the value of 0 as blocking (it should be 1).
+        no_flags = lines[np.where(flags == 0)[0]]
+        map_info["block"] = np.concatenate((map_info["block"], no_flags), axis=0)
+
         map_info["two-sided"] = lines[filter_flags_by_bit(flags, 2)]  # Two-sided
         map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secrets
         map_info["special"] = lines[np.where(specials != 0)[0]]  # specials
