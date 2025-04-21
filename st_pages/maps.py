@@ -16,6 +16,6 @@ with col4:
     show_special = st.checkbox("Show Special", value=True)
 
 fig = st.session_state["viewer"].draw_map(
-    chosen_map, palette=palette, show_secret=show_secrets, show_special=show_special, show_things=show_things
+    chosen_map, palette=palette, show_secrets=show_secrets, show_specials=show_special, show_things=show_things
 )
 st.pyplot(fig, use_container_width=True, format="png", dpi=300)

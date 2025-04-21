@@ -64,8 +64,8 @@ class WadViewer:
         map_name: str,
         palette: str = "OMGIFOL",
         ax: mpl.axes.Axes | None = None,
-        show_secret: bool = False,
-        show_special: bool = True,
+        show_secrets: bool = False,
+        show_specials: bool = True,
         show_things: bool = False,
         **kwargs,
     ) -> plt.figure:
@@ -115,13 +115,13 @@ class WadViewer:
         ax.add_collection(bloc_lines)
 
         # secial and secret lines are drawn on top of regular lines.
-        if show_special:
+        if show_specials:
             special_color = [x / 255 for x in cmap["special"]]
             special_args = {"colors": special_color, "linewidths": 0.8} | supp_args["special"]
             special_lines = LineCollection(map_data["special"], **special_args)
             ax.add_collection(special_lines)
 
-        if show_secret:
+        if show_secrets:
             secret_color = [x / 255 for x in cmap["secret"]]
             secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
             secret_lines = LineCollection(map_data["secret"], **secret_args)
