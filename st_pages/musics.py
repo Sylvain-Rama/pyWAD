@@ -62,11 +62,10 @@ if st.session_state["music_path"].endswith(".mid") & (os.name == "nt"):
         if st.session_state["player"] is not None:
             st.session_state["player"].stop()
 
-
 elif st.session_state["music_path"].endswith(".ogg"):
     st.session_state["player"] = None
     with col2:
         st.audio(st.session_state["music_path"])
 
 else:
-    st.error(f"This player wors only for ogg format or midi format on Windows.")
+    st.error(f"This player works only for ogg format or for midi format on Windows.")
