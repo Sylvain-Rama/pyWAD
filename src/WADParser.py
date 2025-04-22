@@ -43,7 +43,14 @@ class WAD_file:
         self.palette = self._get_palette()
         if self._maps_lumps is not None:
             self.id2sprites = self._parse_things()
-            self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
+            maps = {}
+            for map_name in self._maps_lumps.keys():
+                try:
+                    maps[map_name] = self._parse_map(map_name)
+                except:
+                    logger.warning(f"Error when parsing map {map_name}.")
+            self.maps = maps
+            # self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
 
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
