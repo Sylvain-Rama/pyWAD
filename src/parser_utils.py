@@ -2,7 +2,7 @@ import re
 
 
 EXMY_REGEX = re.compile(r"^E(?P<episode>[0-9])M(?P<number>[0-9])$")
-MAPXY_REGEX = re.compile(r"^MAP(?P<number>[0-9]{2})$")
+MAPXY_REGEX = re.compile(r"^MAP(?P<number>[0-9]{2}[A-Z]?)$")
 TEX_REGEX = re.compile(r"^TEXTURE.$")
 
 MAPS_ATTRS = {
