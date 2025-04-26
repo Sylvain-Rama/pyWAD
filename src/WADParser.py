@@ -14,7 +14,7 @@ https://www.gamers.org/dhs/helpdocs/dmsp1666.html
 """
 
 sys.path.append("src/")
-from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
+from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_LUMPS, TEX_REGEX
 from palettes import DEFAULT_PALETTE
 from mus2mid import MUSIC_FORMATS
 
@@ -95,41 +95,31 @@ class WAD_file:
         return lumps
 
     def _parse_lumps(self) -> tuple[dict, dict]:
-        misc_lumps = {}
-        maps_lumps = {}
         lump_names = [x[0] for x in self.lumps]
+        maps_names = [x for x in lump_names if (bool(EXMY_REGEX.match(x)) | bool(MAPXY_REGEX.match(x)))]
 
-        maps_names = [x for x in lump_names if EXMY_REGEX.match(x)]
-        maps_idxs = [i for i, x in enumerate(lump_names) if EXMY_REGEX.match(x)]
-
-        if len(maps_names) == 0:
-            maps_names = [x for x in lump_names if MAPXY_REGEX.match(x)]
-            maps_idxs = [i for i, x in enumerate(lump_names) if MAPXY_REGEX.match(x)]
-
-        if len(maps_names) == 1:
-            maps_attrs_len = len(MAPS_ATTRS[self.game_type])
-        else:
-            maps_attrs_len = np.diff(maps_idxs)[0] - 1
-
-        i = 0
+        maps = {}
+        misc = {}
         duplicates = []
-        while i < len(self.lumps):
-            name, offset, size = self.lumps[i]
+
+        for name, offset, size in self.lumps:
+
             if name in maps_names:
-                maps_lumps[name] = {}
-                for j in range(maps_attrs_len):
-                    maps_lumps[name][self.lumps[i + j + 1][0]] = self.lumps[i + j + 1][1:]
-                i += maps_attrs_len + 1
+                current_map = name
+                maps[name] = {}
+
+            elif name in MAPS_LUMPS:
+                maps[current_map][name] = (offset, size)
 
             else:
-                i += 1
-                if name in misc_lumps:
-                    duplicates.append(name)
-                    continue
-                misc_lumps[name] = (offset, size)
-        if duplicates:
-            logger.info(f"Found {len(duplicates)} duplicated lumps in this {self.wad_type}.")
-        return maps_lumps, misc_lumps
+                if name in misc.keys():
+                    duplicates.append((name, offset, size))
+                else:
+                    misc[name] = (offset, size)
+        if len(duplicates) > 0:
+            logger.warning(f"Found {len(duplicates)} duplicated lumps in this WAD.")
+
+        return maps, misc
 
     def _lump_data(self, offset: int, size: int) -> bytes:
         self.bytes.seek(offset)
