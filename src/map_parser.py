@@ -3,6 +3,7 @@ import re
 from collections import defaultdict
 import numpy as np
 from loguru import logger
+from dataclasses import dataclass
 
 
 def filter_flags_by_bit(flags: np.array, bit_position: int) -> np.array:
