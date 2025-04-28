@@ -31,7 +31,7 @@ def get_map_dims(vertices, parsed_map: ParsedMap) -> ParsedMap:
 
     map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
     parsed_map.map_lims = map_lims
-    parsed_map.map_size = (map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
+    parsed_map.map_dims = (map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
 
     return parsed_map
 
@@ -67,7 +67,7 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     # We consider every lines that are not two-sided are blocking
     parsed_map.block = lines[filter_flags_by_bit(flags, 2, bit_value=0)]
 
-    parsed_map.twosided = lines[filter_flags_by_bit(flags, 2)]  # Two-sided
+    parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, bit_value=1)]  # Two-sided
     parsed_map.special = lines[np.where(specials != 0)[0]]  # specials
 
     lump = wad._lump_data(*map_dict["THINGS"])
