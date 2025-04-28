@@ -9,14 +9,14 @@ from dataclasses import dataclass
 
 @dataclass
 class ParsedMap:
-    map_lims: tuple[float, float, float, float]
-    map_dims: tuple[float, float]
-    map_name: str
-    block: np.array
-    twosided: np.array
-    special: np.array
-    things: dict[int, list[float, float]]
-    grouped_things: np.array
+    map_lims: tuple[float, float, float, float] = None
+    map_dims: tuple[float, float] = None
+    map_name: str = None
+    block: np.array = None
+    twosided: np.array = None
+    special: np.array = None
+    things: dict[int, list[float, float]] = None
+    grouped_things: np.array = None
 
 
 def filter_flags_by_bit(flags: np.array, bit_position: int, bit_value=1) -> np.array:
@@ -27,7 +27,7 @@ def filter_flags_by_bit(flags: np.array, bit_position: int, bit_value=1) -> np.a
     return np.where(mask)[0]
 
 
-def get_map_dims(vertices, parsed_map: ParsedMap) -> dict[str, float]:
+def get_map_dims(vertices, parsed_map: ParsedMap) -> ParsedMap:
 
     map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
     parsed_map.map_lims = map_lims
@@ -36,7 +36,7 @@ def get_map_dims(vertices, parsed_map: ParsedMap) -> dict[str, float]:
     return parsed_map
 
 
-def parse_old_format(wad, parsed_map: ParsedMap) -> ParsedMap:
+def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
 
     map_dict = wad._maps_lumps[parsed_map.map_name]
 
@@ -47,11 +47,11 @@ def parse_old_format(wad, parsed_map: ParsedMap) -> ParsedMap:
 
     lump = wad._lump_data(*map_dict["LINEDEFS"])
 
-    if wad.game_type in ["DOOM", "HERETIC"]:
+    if game_type in ["DOOM", "HERETIC"]:
 
         linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
 
-    elif wad.game_type in ["HEXEN", "UDMF"]:
+    elif game_type in ["HEXEN"]:
         linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
 
     else:
@@ -119,6 +119,9 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
     twosided = []
     special = []
     things = []
+    map_dict = wad._maps_lumps[parsed_map.map_name]
+
+    text = wad._lump_data(*map_dict["TEXTMAP"]).decode("utf8")
 
     text = re.sub(r"//.*", "", text)
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
@@ -177,12 +180,15 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
 def parse_map(wad, map_name: str):
     parsed_map = ParsedMap()
     parsed_map.map_name = map_name
-    map_dict = wad.maps[map_name]
+    map_dict = wad._maps_lumps[map_name]
     if "TEXTMAP" in map_dict.keys():
         parsed_map = parse_udmf_format(wad, parsed_map)
 
-    elif "LINEDEF" in map_dict.keys():
-        parsed_map = parse_old_format(wad, parsed_map)
+    elif "LINEDEFS" in map_dict.keys():
+        game_type = "DOOM"
+        if "BEHAVIOR" in map_dict.keys():
+            game_type = "HEXEN"
+        parsed_map = parse_old_format(wad, parsed_map, game_type=game_type)
 
     else:
         logger.error(f"{map_name} map format is not recognised.")
