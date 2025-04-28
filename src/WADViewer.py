@@ -85,6 +85,7 @@ class WadViewer:
         supp_args = parse_kwargs(kwargs)
 
         map_data = self.wad.maps[map_name]
+
         output_fig = False
 
         if ax is None:

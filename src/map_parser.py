@@ -19,11 +19,14 @@ class ParsedMap:
     grouped_things: np.array = None
 
 
-def filter_flags_by_bit(flags: np.array, bit_position: int, bit_value=1) -> np.array:
+def filter_flags_by_bit(flags: np.array, bit_position: int, value=1) -> np.array:
     """
     Returns the indices of flags where the given bit_position is set to value.
     """
-    mask = (flags & (1 << bit_position)) == bit_value
+    if value not in (0, 1):
+        raise ValueError("value must be 0 or 1")
+
+    mask = ((flags >> bit_position) & 1) == value
     return np.where(mask)[0]
 
 
@@ -64,10 +67,10 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     specials = linedefs[:, 3]
 
     # Some WADs don't have all their linedefs flags properly set.
-    # We consider every lines that are not two-sided are blocking
-    parsed_map.block = lines[filter_flags_by_bit(flags, 2, bit_value=0)]
+    # We consider every lines that are not two-sided as blocking
+    parsed_map.block = lines[filter_flags_by_bit(flags, 2, value=0)]
 
-    parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, bit_value=1)]  # Two-sided
+    parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, value=1)]  # Two-sided
     parsed_map.special = lines[np.where(specials != 0)[0]]  # specials
 
     lump = wad._lump_data(*map_dict["THINGS"])
@@ -167,6 +170,7 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
     twosided = np.array(twosided)
     special = np.array(special)
     verts = np.array(vertices)
+    parsed_map = get_map_dims(verts, parsed_map)
 
     parsed_map.things = things
 
