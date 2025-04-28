@@ -16,7 +16,6 @@ class ParsedMap:
     twosided: np.array = None
     special: np.array = None
     things: dict[int, list[float, float]] = None
-    grouped_things: np.array = None
 
 
 def filter_flags_by_bit(flags: np.array, bit_position: int, value=1) -> np.array:
@@ -51,13 +50,10 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     lump = wad._lump_data(*map_dict["LINEDEFS"])
 
     if game_type in ["DOOM", "HERETIC"]:
-
         linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
         lump = wad._lump_data(*map_dict["THINGS"])
         things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
-        idx = 0
-        idy = 1
-        idtype = 3
+        idx, idy, idtype = 0, 1, 3
 
     elif game_type in ["HEXEN"]:
         linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
@@ -65,12 +61,10 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
         things = np.array([struct.unpack(f"<{7}h{6}B", lump[i : i + 20]) for i in range(0, len(lump), 20)]).astype(
             np.int16
         )
-        idtype = 0
-        idx = 1
-        idy = 2
+        idtype, idx, idy = 0, 1, 2
 
     else:
-        logger.error("Unable to parse map linedefs.")
+        logger.error("Unable to parse map linedefs and/or things.")
         return None
     linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
 
@@ -81,10 +75,10 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     # Some WADs don't have all their linedefs flags properly set.
     # We consider every lines that are not two-sided as blocking
     parsed_map.block = lines[filter_flags_by_bit(flags, 2, value=0)]
-
     parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, value=1)]  # Two-sided
     parsed_map.special = lines[np.where(specials != 0)[0]]  # specials
 
+    # Hexen & Doom formats have different things format, hence the diferent ids for x/y/type.
     things_dict = {}
     for thing in things:
         thing_name = wad.id2sprites.get(thing[idtype], "NONE")
@@ -130,7 +124,8 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
     blocking = []
     twosided = []
     special = []
-    things = []
+    things_dict = {"all_things": {"x": [], "y": []}}
+
     map_dict = wad._maps_lumps[parsed_map.map_name]
 
     text = wad._lump_data(*map_dict["TEXTMAP"]).decode("utf8")
@@ -141,7 +136,6 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
     block_re = re.compile(r"(\w+)\s*\{(.*?)\}", re.DOTALL)
     prop_re = re.compile(r"(\w+)\s*=\s*(.*?);")
 
-    things_dict = {"all_things": {"x": [], "y": []}}
     for block_match in block_re.finditer(text):
         block_type, content = block_match.groups()
         props = {}
