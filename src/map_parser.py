@@ -53,9 +53,21 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     if game_type in ["DOOM", "HERETIC"]:
 
         linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
+        lump = wad._lump_data(*map_dict["THINGS"])
+        things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
+        idx = 0
+        idy = 1
+        idtype = 3
 
     elif game_type in ["HEXEN"]:
         linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
+        lump = wad._lump_data(*map_dict["THINGS"])
+        things = np.array([struct.unpack(f"<{7}h{6}B", lump[i : i + 20]) for i in range(0, len(lump), 20)]).astype(
+            np.int16
+        )
+        idtype = 0
+        idx = 1
+        idy = 2
 
     else:
         logger.error("Unable to parse map linedefs.")
@@ -73,22 +85,19 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, value=1)]  # Two-sided
     parsed_map.special = lines[np.where(specials != 0)[0]]  # specials
 
-    lump = wad._lump_data(*map_dict["THINGS"])
-    things = np.array([struct.unpack("<HHHHH", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
-
     things_dict = {}
     for thing in things:
-        thing_name = wad.id2sprites.get(thing[3], "NONE")
+        thing_name = wad.id2sprites.get(thing[idtype], "NONE")
         if thing_name in ["NONE", "none", "none-"]:
             continue
         if thing_name not in things_dict:
-            things_dict[thing_name] = {"x": [int(thing[0])], "y": [int(thing[1])]}
+            things_dict[thing_name] = {"x": [float(thing[idx])], "y": [float(thing[idy])]}
         else:
-            things_dict[thing_name]["x"].append(int(thing[0]))
-            things_dict[thing_name]["y"].append(int(thing[1]))
+            things_dict[thing_name]["x"].append(float(thing[idx]))
+            things_dict[thing_name]["y"].append(float(thing[idy]))
 
     # Simple way to get everything for plotting in the maps, but will keep the NONE keys.
-    things_dict["all_things"] = {"x": things[:, 0], "y": things[:, 1]}
+    things_dict["all_things"] = {"x": things[:, idx], "y": things[:, idy]}
 
     parsed_map.things = things_dict
 
@@ -132,6 +141,7 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
     block_re = re.compile(r"(\w+)\s*\{(.*?)\}", re.DOTALL)
     prop_re = re.compile(r"(\w+)\s*=\s*(.*?);")
 
+    things_dict = {"all_things": {"x": [], "y": []}}
     for block_match in block_re.finditer(text):
         block_type, content = block_match.groups()
         props = {}
@@ -159,9 +169,16 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
         elif block_type == "thing":
             x = props.pop("x", 0.0)
             y = props.pop("y", 0.0)
-            type = props.pop("type", 0.0)
+            thing_name = props.pop("type", 0.0)
 
-            things.append([x, y, type])
+            if thing_name not in things_dict.keys():
+                things_dict[thing_name] = {"x": [x], "y": [y]}
+            else:
+                things_dict[thing_name]["x"].append(x)
+                things_dict[thing_name]["y"].append(y)
+
+            things_dict["all_things"]["x"].append(x)
+            things_dict["all_things"]["y"].append(y)
 
         else:
             pass
@@ -172,7 +189,7 @@ def parse_udmf_format(wad, parsed_map: ParsedMap) -> ParsedMap:
     verts = np.array(vertices)
     parsed_map = get_map_dims(verts, parsed_map)
 
-    parsed_map.things = things
+    parsed_map.things = things_dict
 
     parsed_map.block = verts[blocking]
     parsed_map.twosided = verts[twosided]
