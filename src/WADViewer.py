@@ -123,10 +123,11 @@ class WadViewer:
             ax.add_collection(special_lines)
 
         if show_secrets:
-            secret_color = [x / 255 for x in cmap["secret"]]
-            secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
-            secret_lines = LineCollection(map_data["secret"], **secret_args)
-            ax.add_collection(secret_lines)
+            if map_data.secret is not None:
+                secret_color = [x / 255 for x in cmap["secret"]]
+                secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
+                secret_lines = LineCollection(map_data.secret, **secret_args)
+                ax.add_collection(secret_lines)
 
         if show_things:
             things_color = [x / 255 for x in cmap["things"]]

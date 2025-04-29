@@ -15,7 +15,8 @@ class ParsedMap:
     block: np.array = None
     twosided: np.array = None
     special: np.array = None
-    things: dict[int, list[float, float]] = None
+    secret: np.array = None
+    things: dict[str, list[float, float]] = None
 
 
 def filter_flags_by_bit(flags: np.array, bit_position: int, value=1) -> np.array:
@@ -52,16 +53,18 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     if game_type in ["DOOM", "HERETIC"]:
         linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
         lump = wad._lump_data(*map_dict["THINGS"])
-        things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
-        idx, idy, idtype = 0, 1, 3
+        things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)])
+        th_x = things[:, 0]
+        th_y = things[:, 1]
+        th_type = things[:, 3]
 
     elif game_type in ["HEXEN"]:
         linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
         lump = wad._lump_data(*map_dict["THINGS"])
-        things = np.array([struct.unpack(f"<{7}h{6}B", lump[i : i + 20]) for i in range(0, len(lump), 20)]).astype(
-            np.int16
-        )
-        idtype, idx, idy = 0, 1, 2
+        things = np.array([struct.unpack(f"<{7}h{6}B", lump[i : i + 20]) for i in range(0, len(lump), 20)])
+        th_x = things[:, 1]
+        th_y = things[:, 2]
+        th_type = things[:, 0]
 
     else:
         logger.error("Unable to parse map linedefs and/or things.")
@@ -77,21 +80,22 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
     parsed_map.block = lines[filter_flags_by_bit(flags, 2, value=0)]
     parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, value=1)]  # Two-sided
     parsed_map.special = lines[np.where(specials != 0)[0]]  # specials
+    parsed_map.secret = lines[filter_flags_by_bit(flags, 5)]  # Secrets
 
     # Hexen & Doom formats have different things format, hence the diferent ids for x/y/type.
     things_dict = {}
-    for thing in things:
-        thing_name = wad.id2sprites.get(thing[idtype], "NONE")
+    for t, x, y in zip(th_type, th_x, th_y):
+        thing_name = wad.id2sprites.get(t, "NONE")
         if thing_name in ["NONE", "none", "none-"]:
             continue
         if thing_name not in things_dict:
-            things_dict[thing_name] = {"x": [float(thing[idx])], "y": [float(thing[idy])]}
+            things_dict[thing_name] = {"x": [float(x)], "y": [float(y)]}
         else:
-            things_dict[thing_name]["x"].append(float(thing[idx]))
-            things_dict[thing_name]["y"].append(float(thing[idy]))
+            things_dict[thing_name]["x"].append(float(x))
+            things_dict[thing_name]["y"].append(float(y))
 
     # Simple way to get everything for plotting in the maps, but will keep the NONE keys.
-    things_dict["all_things"] = {"x": things[:, idx], "y": things[:, idy]}
+    things_dict["all_things"] = {"x": th_x, "y": th_y}
 
     parsed_map.things = things_dict
 
