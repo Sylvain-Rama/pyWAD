@@ -153,7 +153,7 @@ class WAD_file:
         # Load the THINGS IDs to names mapping
         id2sprite = {}
 
-        with open(f"src/THINGS/{self.game_type}.csv", newline="") as csvfile:
+        with open(f"src/THINGS/{self.game_type}.csv", newline="", encoding="utf-8") as csvfile:
             csvreader = csv.reader(csvfile, delimiter=";", quotechar="|")
             header = next(csvreader)  # Skips the column names
             for row in csvreader:
