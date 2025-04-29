@@ -17,11 +17,16 @@ def get_titlepic(viewer):
     fig.patch.set_alpha(0)
     ax.axis("off")
 
-    if "TITLEPIC" in viewer.wad.lump_names:
-        viewer.draw_patch("TITLEPIC", ax=ax)
-    elif "TITLE" in viewer.wad.lump_names:
-        viewer.draw_flat("TITLE", ax=ax)
-    else:
+    try:
+
+        if "TITLEPIC" in viewer.wad.lump_names:
+            viewer.draw_patch("TITLEPIC", ax=ax)
+        elif "TITLE" in viewer.wad.lump_names:
+            viewer.draw_flat("TITLE", ax=ax)
+        else:
+            return None
+    except Exception as e:
+        logger.error(e)
         return None
 
     return fig
