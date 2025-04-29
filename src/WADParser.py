@@ -96,13 +96,15 @@ class WAD_file:
     def _parse_lumps(self) -> tuple[dict, dict]:
         lump_names = [x[0] for x in self.lumps]
         maps_names = [x for x in lump_names if (bool(EXMY_REGEX.match(x)) | bool(MAPXY_REGEX.match(x)))]
+        if maps_names:
+            current_map = maps_names[0]
+            maps[current_map] = {}
 
         maps = {}
         misc = {}
         duplicates = []
 
         for name, offset, size in self.lumps:
-
             if name in maps_names:
                 current_map = name
                 maps[name] = {}
