@@ -85,10 +85,11 @@ class WadViewer:
         supp_args = parse_kwargs(kwargs)
 
         map_data = self.wad.maps[map_name]
+
         output_fig = False
 
         if ax is None:
-            width, height = map_data["metadata"]["map_size"]
+            width, height = map_data.map_dims
             wh_ratio = width / height
 
             fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio), dpi=150)
@@ -108,35 +109,36 @@ class WadViewer:
         if output_fig:
             fig.patch.set_facecolor(bckgrd_color)
 
-        twosided = LineCollection(map_data["two-sided"], **twosided_args)
+        twosided = LineCollection(map_data.twosided, **twosided_args)
         ax.add_collection(twosided)
 
-        bloc_lines = LineCollection(map_data["block"], **block_args)
+        bloc_lines = LineCollection(map_data.block, **block_args)
         ax.add_collection(bloc_lines)
 
         # secial and secret lines are drawn on top of regular lines.
         if show_specials:
             special_color = [x / 255 for x in cmap["special"]]
             special_args = {"colors": special_color, "linewidths": 0.8} | supp_args["special"]
-            special_lines = LineCollection(map_data["special"], **special_args)
+            special_lines = LineCollection(map_data.special, **special_args)
             ax.add_collection(special_lines)
 
         if show_secrets:
-            secret_color = [x / 255 for x in cmap["secret"]]
-            secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
-            secret_lines = LineCollection(map_data["secret"], **secret_args)
-            ax.add_collection(secret_lines)
+            if map_data.secret is not None:
+                secret_color = [x / 255 for x in cmap["secret"]]
+                secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
+                secret_lines = LineCollection(map_data.secret, **secret_args)
+                ax.add_collection(secret_lines)
 
         if show_things:
             things_color = [x / 255 for x in cmap["things"]]
-            things_dict = map_data["things"]
+            things_dict = map_data.things
             things_args = {"color": things_color, "s": 5, "marker": "+"} | supp_args["things"]
             ax.scatter(things_dict["all_things"]["x"], things_dict["all_things"]["y"], **things_args)
 
         ax.axis("equal")
         ax.axis("off")
 
-        logger.info(f'Plotted map {map_data["metadata"]["map_name"]}.')
+        logger.info(f"Plotted map {map_data.map_name}.")
 
         if output_fig:
             fig.tight_layout(pad=0.2)

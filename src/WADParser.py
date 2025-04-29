@@ -14,9 +14,10 @@ https://www.gamers.org/dhs/helpdocs/dmsp1666.html
 """
 
 sys.path.append("src/")
-from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_ATTRS, TEX_REGEX
+from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_LUMPS, TEX_REGEX
 from palettes import DEFAULT_PALETTE
 from mus2mid import MUSIC_FORMATS
+from map_parser import parse_map
 
 
 class WAD_file:
@@ -43,7 +44,14 @@ class WAD_file:
         self.palette = self._get_palette()
         if self._maps_lumps is not None:
             self.id2sprites = self._parse_things()
-            self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
+            maps = {}
+            for map_name in self._maps_lumps.keys():
+                try:
+                    maps[map_name] = parse_map(self, map_name)
+                except:
+                    logger.warning(f"Error when parsing map {map_name}.")
+            self.maps = maps
+            # self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
 
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
@@ -88,41 +96,31 @@ class WAD_file:
         return lumps
 
     def _parse_lumps(self) -> tuple[dict, dict]:
-        misc_lumps = {}
-        maps_lumps = {}
         lump_names = [x[0] for x in self.lumps]
+        maps_names = [x for x in lump_names if (bool(EXMY_REGEX.match(x)) | bool(MAPXY_REGEX.match(x)))]
 
-        maps_names = [x for x in lump_names if EXMY_REGEX.match(x)]
-        maps_idxs = [i for i, x in enumerate(lump_names) if EXMY_REGEX.match(x)]
-
-        if len(maps_names) == 0:
-            maps_names = [x for x in lump_names if MAPXY_REGEX.match(x)]
-            maps_idxs = [i for i, x in enumerate(lump_names) if MAPXY_REGEX.match(x)]
-
-        if len(maps_names) == 1:
-            maps_attrs_len = len(MAPS_ATTRS[self.game_type])
-        else:
-            maps_attrs_len = np.diff(maps_idxs)[0] - 1
-
-        i = 0
+        maps = {}
+        misc = {}
         duplicates = []
-        while i < len(self.lumps):
-            name, offset, size = self.lumps[i]
+
+        for name, offset, size in self.lumps:
+
             if name in maps_names:
-                maps_lumps[name] = {}
-                for j in range(maps_attrs_len):
-                    maps_lumps[name][self.lumps[i + j + 1][0]] = self.lumps[i + j + 1][1:]
-                i += maps_attrs_len + 1
+                current_map = name
+                maps[name] = {}
+
+            elif name in MAPS_LUMPS:
+                maps[current_map][name] = (offset, size)
 
             else:
-                i += 1
-                if name in misc_lumps:
-                    duplicates.append(name)
-                    continue
-                misc_lumps[name] = (offset, size)
-        if duplicates:
-            logger.info(f"Found {len(duplicates)} duplicated lumps in this {self.wad_type}.")
-        return maps_lumps, misc_lumps
+                if name in misc.keys():
+                    duplicates.append((name, offset, size))
+                else:
+                    misc[name] = (offset, size)
+        if len(duplicates) > 0:
+            logger.warning(f"Found {len(duplicates)} duplicated lumps in this WAD.")
+
+        return maps, misc
 
     def _lump_data(self, offset: int, size: int) -> bytes:
         self.bytes.seek(offset)
@@ -205,77 +203,6 @@ class WAD_file:
             sprite_dict[sprite_name] = sorted([x for x in self.sprites if x.startswith(sprite_name)])
 
         return sprite_dict
-
-    def _parse_map(self, map_name: str) -> dict:
-
-        def filter_flags_by_bit(flags: np.array, bit_position: int) -> np.array:
-            """
-            Returns the indices of flags where the given bit_position is set to 1.
-            """
-            mask = (flags & (1 << bit_position)) != 0
-            return np.where(mask)[0]
-
-        map_info = defaultdict(list)
-        metadata = {}
-
-        lump = self._lump_data(*self._maps_lumps[map_name]["VERTEXES"])
-        vertices = np.array([struct.unpack("<hh", lump[i : i + 4]) for i in range(0, len(lump), 4)])
-
-        map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
-        metadata["map_lims"] = map_lims
-        metadata["map_size"] = (map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
-        metadata["map_name"] = map_name
-
-        lump = self._lump_data(*self._maps_lumps[map_name]["LINEDEFS"])
-
-        if self.game_type in ["DOOM", "HERETIC"]:
-
-            linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
-
-        elif self.game_type in ["HEXEN", "UDMF"]:
-            linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
-
-        else:
-            logger.error("Unable to parse map linedefs.")
-            return None
-        linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
-
-        lines = vertices[linecoords]
-        flags = linedefs[:, 2]
-        specials = linedefs[:, 3]
-
-        map_info["block"] = lines[filter_flags_by_bit(flags, 0)]  # Impassable bit is 0th bit (1 << 0)
-
-        # Some WADs don't have all their linedefs flags properly set.
-        # We consider the value of 0 as blocking (it should be 1).
-        no_flags = lines[np.where(flags == 0)[0]]
-        map_info["block"] = np.concatenate((map_info["block"], no_flags), axis=0)
-
-        map_info["two-sided"] = lines[filter_flags_by_bit(flags, 2)]  # Two-sided
-        map_info["secret"] = lines[filter_flags_by_bit(flags, 5)]  # Secrets
-        map_info["special"] = lines[np.where(specials != 0)[0]]  # specials
-
-        lump = self._lump_data(*self._maps_lumps[map_name]["THINGS"])
-        things = np.array([struct.unpack("<HHHHH", lump[i : i + 10]) for i in range(0, len(lump), 10)]).astype(np.int16)
-
-        things_dict = {}
-        for thing in things:
-            thing_name = self.id2sprites.get(thing[3], "NONE")
-            if thing_name in ["NONE", "none", "none-"]:
-                continue
-            if thing_name not in things_dict:
-                things_dict[thing_name] = {"x": [int(thing[0])], "y": [int(thing[1])]}
-            else:
-                things_dict[thing_name]["x"].append(int(thing[0]))
-                things_dict[thing_name]["y"].append(int(thing[1]))
-
-        # Simple way to get everything for plotting in the maps, but will keep the NONE keys.
-        things_dict["all_things"] = {"x": things[:, 0], "y": things[:, 1]}
-
-        map_info["things"] = things_dict
-        map_info["metadata"] = metadata
-
-        return map_info
 
     def _parse_patches(self) -> list:
         lump = self._lump_data_by_name("PNAMES")
