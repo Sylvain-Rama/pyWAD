@@ -35,8 +35,7 @@ class WAD_file:
             self.game_type = "HERETIC"
         if "BEHAVIOR" in self.lump_names:
             self.game_type = "HEXEN"
-        if "ENDMAP" in self.lump_names:
-            self.game_type = "UDMF"
+
         logger.info(f"Found a {self.game_type} {self.wad_type}.")
 
         self._maps_lumps, self._misc_lumps = self._parse_lumps()
@@ -51,7 +50,6 @@ class WAD_file:
                 except:
                     logger.warning(f"Error when parsing map {map_name}.")
             self.maps = maps
-            # self.maps = {k: self._parse_map(k) for k in self._maps_lumps.keys()}
 
         self.flats = self._parse_by_markers("FLATS", "F_START", "F_END")
         self.sprites = self._parse_by_markers("SPRITES", "S_START", "S_END")
@@ -154,8 +152,8 @@ class WAD_file:
     def _parse_things(self) -> dict[str:str]:
         # Load the THINGS IDs to names mapping
         id2sprite = {}
-        thing_type = "DOOM" if self.game_type == "UDMF" else self.game_type
-        with open(f"src/THINGS/{thing_type}.csv", newline="") as csvfile:
+
+        with open(f"src/THINGS/{self.game_type}.csv", newline="") as csvfile:
             csvreader = csv.reader(csvfile, delimiter=";", quotechar="|")
             header = next(csvreader)  # Skips the column names
             for row in csvreader:
