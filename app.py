@@ -56,22 +56,24 @@ if uploaded_file is not None:
         st.session_state["wad_path"] = uploaded_file.name
         st.session_state["viewer"] = WadViewer(wad)
         logger.debug("App: WAD file uploaded.")
-        # try:
-        #     pic = get_titlepic(st.session_state["viewer"])
-        # except:
-        #     pic = None
-        # st.session_state["title_pic"] = pic
+        try:
+            pic = get_titlepic(st.session_state["viewer"])
+        except:
+            pic = None
+        st.session_state["title_pic"] = pic
         # st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
+
+        if st.session_state["title_pic"] is not None:
+            with head_col2:
+                st.pyplot(
+                    st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight", use_container_width=True
+                )
 
         # Cleaning the output folder.
         for f in os.listdir("output"):
             if f != ".gitkeep":
                 os.remove(os.path.join("output", f))
 
-
-# if st.session_state["title_pic"] is not None:
-#     with head_col2:
-#         st.pyplot(st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight", use_container_width=True)
 
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")
