@@ -17,16 +17,11 @@ def get_titlepic(viewer):
     fig.patch.set_alpha(0)
     ax.axis("off")
 
-    try:
-
-        if "TITLEPIC" in viewer.wad.lump_names:
-            viewer.draw_patch("TITLEPIC", ax=ax)
-        elif "TITLE" in viewer.wad.lump_names:
-            viewer.draw_flat("TITLE", ax=ax)
-        else:
-            return None
-    except Exception as e:
-        logger.error(e)
+    if "TITLEPIC" in viewer.wad.lump_names:
+        viewer.draw_patch("TITLEPIC", ax=ax)
+    elif "TITLE" in viewer.wad.lump_names:
+        viewer.draw_flat("TITLE", ax=ax)
+    else:
         return None
 
     return fig
@@ -60,6 +55,12 @@ if uploaded_file is not None:
         st.session_state["wad"] = wad
         st.session_state["wad_path"] = uploaded_file.name
         st.session_state["viewer"] = WadViewer(wad)
+        logger.debug("App: WAD file uploaded.")
+        # try:
+        #     pic = get_titlepic(st.session_state["viewer"])
+        # except:
+        #     pic = None
+        # st.session_state["title_pic"] = pic
         # st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
 
         # Cleaning the output folder.
@@ -68,9 +69,9 @@ if uploaded_file is not None:
                 os.remove(os.path.join("output", f))
 
 
-if st.session_state["title_pic"] is not None:
-    with head_col2:
-        st.pyplot(st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight", use_container_width=True)
+# if st.session_state["title_pic"] is not None:
+#     with head_col2:
+#         st.pyplot(st.session_state["title_pic"], format="png", dpi=300, bbox_inches="tight", use_container_width=True)
 
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")

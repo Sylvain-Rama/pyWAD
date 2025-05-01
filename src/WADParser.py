@@ -202,6 +202,8 @@ class WAD_file:
         for sprite_name in sprite_names:
             sprite_dict[sprite_name] = sorted([x for x in self.sprites if x.startswith(sprite_name)])
 
+        logger.info(f"Created {len(sprite_dict)} spritesheets.")
+
         return sprite_dict
 
     def _parse_patches(self) -> list:
@@ -257,15 +259,18 @@ class WAD_file:
 
     def _gather_textures(self) -> dict:
         tex_lumps = [lump for lump in self.lump_names if TEX_REGEX.match(lump)]
+        logger.info(f"Found {len(tex_lumps)} texture lumps.")
 
         if (len(tex_lumps) == 0) | ("PNAMES" not in self.lump_names):
             logger.info(f"No textures found in this {self.wad_type}.")
             return None
 
         patches = self._parse_patches()
+        logger.debug(f"Parsed {len(patches)} patches.")
 
         textures = {}
         for tex_name in tex_lumps:
+            logger.debug(f"Parsing texture lump {tex_name}.")
             texs = self._parse_textures(tex_name, patches)
             textures.update(texs)
 
