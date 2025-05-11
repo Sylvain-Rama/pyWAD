@@ -63,6 +63,8 @@ class WadViewer:
         self,
         map_name: str,
         palette: str = "OMGIFOL",
+        max_width: int = 4096,
+        scale: float = 1.0,
         ax: mpl.axes.Axes | None = None,
         show_secrets: bool = False,
         show_specials: bool = True,
@@ -87,23 +89,33 @@ class WadViewer:
         map_data = self.wad.maps[map_name]
 
         output_fig = False
+        dpi = 150
 
         if ax is None:
+            # Definition of a figure according to scale factor and max width.
+            # We assume that 1000 doom units will fit in 1 inch of the figure.
             width, height = map_data.map_dims
+            fig_width = min((width / 1000) * scale, max_width / dpi)
             wh_ratio = width / height
 
-            fig, ax = plt.subplots(figsize=(12, 12 / wh_ratio), dpi=150)
+            fig, ax = plt.subplots(figsize=(fig_width, fig_width / wh_ratio), dpi=dpi)
 
             output_fig = True
 
         cmap = MAP_CMAPS[palette]
 
         bckgrd_color = [x / 255 for x in cmap["background"]]
-        twosided_color = [x / 255 for x in cmap["2-sided"]]
+        twosided_color = [x / 255 for x in cmap["twosided"]]
         block_color = [x / 255 for x in cmap["block"]]
 
-        twosided_args = {"colors": twosided_color, "linewidths": 0.6, "capstyle": "round"} | supp_args["twosided"]
-        block_args = {"colors": block_color, "linewidths": 0.8, "capstyle": "round"} | supp_args["block"]
+        linewidth_primary = 0.4 + 0.2 * scale
+        linewidth_secondary = 0.2 + 0.2 * scale
+        things_size = 2 * scale
+
+        twosided_args = {"colors": twosided_color, "linewidths": linewidth_secondary, "capstyle": "round"} | supp_args[
+            "twosided"
+        ]
+        block_args = {"colors": block_color, "linewidths": linewidth_primary, "capstyle": "round"} | supp_args["block"]
 
         ax.set_facecolor(bckgrd_color)
         if output_fig:
@@ -118,21 +130,21 @@ class WadViewer:
         # secial and secret lines are drawn on top of regular lines.
         if show_specials:
             special_color = [x / 255 for x in cmap["special"]]
-            special_args = {"colors": special_color, "linewidths": 0.8} | supp_args["special"]
+            special_args = {"colors": special_color, "linewidths": linewidth_primary} | supp_args["special"]
             special_lines = LineCollection(map_data.special, **special_args)
             ax.add_collection(special_lines)
 
         if show_secrets:
             if map_data.secret is not None:
                 secret_color = [x / 255 for x in cmap["secret"]]
-                secret_args = {"colors": secret_color, "linewidths": 0.8} | supp_args["secret"]
+                secret_args = {"colors": secret_color, "linewidths": linewidth_primary} | supp_args["secret"]
                 secret_lines = LineCollection(map_data.secret, **secret_args)
                 ax.add_collection(secret_lines)
 
         if show_things:
             things_color = [x / 255 for x in cmap["things"]]
             things_dict = map_data.things
-            things_args = {"color": things_color, "s": 5, "marker": "+"} | supp_args["things"]
+            things_args = {"color": things_color, "s": things_size, "marker": "+"} | supp_args["things"]
             ax.scatter(things_dict["all_things"]["x"], things_dict["all_things"]["y"], **things_args)
 
         ax.axis("equal")
@@ -284,13 +296,14 @@ class WadViewer:
 
 if __name__ == "__main__":
 
-    args = argparse.ArgumentParser()
-    args.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.WAD")
-    args.add_argument("--command", "-c", type=str, help="Command to run", choices=["draw_map"], default="draw_map")
-    args.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
-    args.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.WAD")
+    parser.add_argument("--command", "-c", type=str, help="Command to run", choices=["draw_map"], default="draw_map")
+    parser.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
+    parser.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
+    parser.add_argument("--format", "-f", type=str, help="Output format", default="png", choices=["png", "svg"])
 
-    args = args.parse_args()
+    args = parser.parse_args()
     wad = WADParser.open_wad_file(args.wad)
     viewer = WadViewer(wad)
 
@@ -302,4 +315,4 @@ if __name__ == "__main__":
 
         for map_name in maps_to_draw:
             fig = viewer.draw_map(map_name, palette=args.palette)
-            fig.savefig(f"output/{map_name}.png", bbox_inches="tight", dpi=300)
+            fig.savefig(f"output/{args.wad.split('/')[-1]}_{map_name}.{args.format}", bbox_inches="tight", dpi=150)

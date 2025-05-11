@@ -266,11 +266,9 @@ class WAD_file:
             return None
 
         patches = self._parse_patches()
-        logger.debug(f"Parsed {len(patches)} patches.")
 
         textures = {}
         for tex_name in tex_lumps:
-            logger.debug(f"Parsing texture lump {tex_name}.")
             texs = self._parse_textures(tex_name, patches)
             textures.update(texs)
 

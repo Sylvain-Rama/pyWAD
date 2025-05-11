@@ -55,7 +55,7 @@ MAP_CMAPS = {
     "DOOM": {
         "background": [0, 0, 0],
         "block": [255, 0, 0],
-        "2-sided": [255, 255, 0],
+        "twosided": [255, 255, 0],
         "secret": [255, 19, 255],
         "special": [20, 20, 255],
         "things": [255, 255, 255],
@@ -63,7 +63,7 @@ MAP_CMAPS = {
     "OMGIFOL": {
         "background": [255, 255, 255],
         "block": [0, 0, 0],
-        "2-sided": [144, 144, 144],
+        "twosided": [144, 144, 144],
         "secret": [255, 19, 255],
         "special": [220, 130, 50],
         "things": [255, 128, 128],
@@ -71,7 +71,7 @@ MAP_CMAPS = {
     "GZDOOM": {
         "background": [127, 103, 83],
         "block": [63, 43, 27],
-        "2-sided": [155, 131, 107],
+        "twosided": [155, 131, 107],
         "secret": [255, 19, 255],
         "special": [255, 5, 5],
         "things": [255, 128, 128],
