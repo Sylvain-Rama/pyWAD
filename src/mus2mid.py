@@ -20,8 +20,9 @@ MUS_PERCUSSION_CHAN = 15
 MUS_ID = b"MUS\x1a"
 MIDI_ID = b"MThd"
 OGG_ID = b"OggS"
+MP3_ID = b"ID3\x03"
 
-MUSIC_FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid", OGG_ID: ".ogg"}
+MUSIC_FORMATS = {MUS_ID: ".mus", MIDI_ID: ".mid", OGG_ID: ".ogg", MP3_ID: ".mp3"}
 
 
 # MUS event codes

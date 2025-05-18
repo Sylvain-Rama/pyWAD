@@ -173,15 +173,10 @@ cython_debug/
 # Local WAD files
 WADS/*.WAD
 *.ipynb
-output/*.png
-output/*.svg
+output/
 *.html
 
 # Sound things
-*.mus
-*.mid
-*.ogg
-*.wav
 fluidsynth/
 *.sf2
 

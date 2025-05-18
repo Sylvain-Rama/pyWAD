@@ -1,6 +1,6 @@
 import streamlit as st
 from src.WADPlayer import MIDIPlayer
-from src.mus2mid import Mus2Mid
+from src.mus2mid import Mus2Mid, MUSIC_FORMATS
 import os
 from loguru import logger
 
@@ -35,37 +35,39 @@ with col1:
 
 
 # Create the player if it's not created yet or if the music is changed
-if st.session_state["music_path"].endswith(".mid") & (os.name == "nt"):
+if st.session_state["music_path"] is not None:
+    music_name, music_extension = os.path.splitext(st.session_state["music_path"])
 
-    if st.session_state["player"] is None:
-        try:
-            st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
-        except Exception as e:
-            st.error(f"Error loading music: {e}.")
-        st.session_state["current_music"] = chosen_music
+    if music_extension.endswith(".mid") & (os.name == "nt"):
+        if st.session_state["player"] is None:
+            try:
+                st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
+            except Exception as e:
+                st.error(f"Error loading music: {e}.")
+            st.session_state["current_music"] = chosen_music
 
-    if st.session_state["current_music"] != chosen_music:
-        st.session_state["player"].stop()
-        st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
-        st.session_state["current_music"] = chosen_music
-
-    with col2:
-        play_button = st.button("Play")
-    if play_button:
-        if st.session_state["player"] is not None:
-            st.session_state["player"].play()
-            with col4:
-                st.write(f"Playing {chosen_music}...")
-    with col3:
-        stop_button = st.button("Stop")
-    if stop_button:
-        if st.session_state["player"] is not None:
+        if st.session_state["current_music"] != chosen_music:
             st.session_state["player"].stop()
+            st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
+            st.session_state["current_music"] = chosen_music
 
-elif st.session_state["music_path"].endswith(".ogg"):
-    st.session_state["player"] = None
-    with col2:
-        st.audio(st.session_state["music_path"])
+        with col2:
+            play_button = st.button("Play")
+        if play_button:
+            if st.session_state["player"] is not None:
+                st.session_state["player"].play()
+                with col4:
+                    st.write(f"Playing {chosen_music}...")
+        with col3:
+            stop_button = st.button("Stop")
+        if stop_button:
+            if st.session_state["player"] is not None:
+                st.session_state["player"].stop()
 
-else:
-    st.error(f"This player works only for ogg format or for midi format on Windows.")
+    elif music_extension in MUSIC_FORMATS.values():
+        st.session_state["player"] = None
+        with col2:
+            st.audio(st.session_state["music_path"])
+
+    else:
+        st.error(f"This player works only for ogg, mp3 format and for midi format on Windows.")

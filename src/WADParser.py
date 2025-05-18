@@ -41,7 +41,8 @@ class WAD_file:
         self._maps_lumps, self._misc_lumps = self._parse_lumps()
 
         self.palette = self._get_palette()
-        if self._maps_lumps is not None:
+        self.maps = None
+        if len(self._maps_lumps) > 0:
             self.id2sprites = self._parse_things()
             maps = {}
             for map_name in self._maps_lumps.keys():
@@ -119,6 +120,9 @@ class WAD_file:
                     misc[name] = (offset, size)
         if len(duplicates) > 0:
             logger.warning(f"Found {len(duplicates)} duplicated lumps in this WAD.")
+
+        # maps = None if len(maps) == 0 else maps
+        # misc = None if len(misc) == 0 else misc
 
         return maps, misc
 
