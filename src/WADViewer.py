@@ -5,6 +5,7 @@ from matplotlib.collections import LineCollection
 import numpy as np
 import argparse
 import struct
+import re
 
 from loguru import logger
 
@@ -64,7 +65,7 @@ class WadViewer:
         map_name: str,
         palette: str = "OMGIFOL",
         max_width: int = 4096,
-        scale: float = 1.0,
+        scale: float = 2.0,
         ax: mpl.axes.Axes | None = None,
         show_secrets: bool = False,
         show_specials: bool = True,
@@ -94,6 +95,7 @@ class WadViewer:
         if ax is None:
             # Definition of a figure according to scale factor and max width.
             # We assume that 1000 doom units will fit in 1 inch of the figure.
+            logger.debug(map_data.map_dims)
             width, height = map_data.map_dims
             fig_width = min((width / 1000) * scale, max_width / dpi)
             wh_ratio = width / height
@@ -298,21 +300,22 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.WAD")
-    parser.add_argument("--command", "-c", type=str, help="Command to run", choices=["draw_map"], default="draw_map")
-    parser.add_argument("--map", "-m", type=str, help="Map name", default="E1M1")
+    parser.add_argument(
+        "--map", "-m", type=str, help="Map name pattern to draw, e.g. E1M1 or E1M. or .", default="E1M1"
+    )
     parser.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
     parser.add_argument("--format", "-f", type=str, help="Output format", default="png", choices=["png", "svg"])
+    parser.add_argument("--scale", "-s", type=float, help="Scale of the map", default=2.0)
+    parser.add_argument("--max_width", "-mw", type=int, help="Max width (px) of the map", default=4096)
 
     args = parser.parse_args()
     wad = WADParser.open_wad_file(args.wad)
     viewer = WadViewer(wad)
 
-    if args.command == "draw_map":
-        if args.map == "*":
-            maps_to_draw = wad.maps.keys()
-        else:
-            maps_to_draw = [args.map]
+    maps_to_draw = [x for x in wad.maps.keys() if re.match(args.map, x)]
+    if len(maps_to_draw) == 0:
+        raise ValueError(f"Invalid map pattern: {args.map}")
 
-        for map_name in maps_to_draw:
-            fig = viewer.draw_map(map_name, palette=args.palette)
-            fig.savefig(f"output/{args.wad.split('/')[-1]}_{map_name}.{args.format}", bbox_inches="tight", dpi=150)
+    for map_name in maps_to_draw:
+        fig = viewer.draw_map(map_name, palette=args.palette, scale=args.scale, max_width=args.max_width)
+        fig.savefig(f"output/{args.wad.split('/')[-1]}_{map_name}.{args.format}", bbox_inches="tight", dpi=150)
