@@ -95,7 +95,6 @@ class WadViewer:
         if ax is None:
             # Definition of a figure according to scale factor and max width.
             # We assume that 1000 doom units will fit in 1 inch of the figure.
-            logger.debug(map_data.map_dims)
             width, height = map_data.map_dims
             fig_width = min((width / 1000) * scale, max_width / dpi)
             wh_ratio = width / height
@@ -300,9 +299,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.WAD")
-    parser.add_argument(
-        "--map", "-m", type=str, help="Map name pattern to draw, e.g. E1M1 or E1M. or .", default="E1M1"
-    )
+    parser.add_argument("--map", "-m", type=str, help="Map name pattern to draw, e.g. E1M1 / E1M. / .", default="E1M1")
     parser.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
     parser.add_argument("--format", "-f", type=str, help="Output format", default="png", choices=["png", "svg"])
     parser.add_argument("--scale", "-s", type=float, help="Scale of the map", default=2.0)
