@@ -12,6 +12,19 @@ from loguru import logger
 import WADParser
 from palettes import MAP_CMAPS
 
+"""Main class to display WAD files.
+This class is used to display the content of a WAD file. It can display flats, textures, maps and sprites.
+
+CLI use:
+
+python WADViewer.py -w <path to WAD_file> -m <map pattern> -f <output_format> -p <palette_name> -s <scale> -mw <max_width>
+
+Or use 
+python Wadviever.py -h 
+
+to get help on the command line arguments.
+"""
+
 
 class WadViewer:
     def __init__(self, wad: WADParser.WAD_file):
