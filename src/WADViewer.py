@@ -232,7 +232,7 @@ class WadViewer:
     def draw_tex(self, tex_name: str, ax: mpl.axes.Axes | None = None) -> plt.figure:
 
         if tex_name not in self.wad.textures.keys():
-            raise ValueError(f"Texture {tex_name} not found in WAD.")
+            raise ValueError(f"Texture {tex_name} not found in this WAD.")
 
         output_fig = ax is None
         if ax is None:

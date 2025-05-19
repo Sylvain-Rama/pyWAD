@@ -1,6 +1,5 @@
 import struct
 import re
-from collections import defaultdict
 import numpy as np
 from loguru import logger
 from typing import Union
@@ -30,7 +29,7 @@ def filter_flags_by_bit(flags: np.array, bit_position: int, value=1) -> np.array
     return np.where(mask)[0]
 
 
-def get_map_dims(vertices, parsed_map: ParsedMap) -> ParsedMap:
+def get_map_dims(vertices: np.array, parsed_map: ParsedMap) -> ParsedMap:
 
     map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
     parsed_map.map_lims = map_lims
@@ -39,7 +38,7 @@ def get_map_dims(vertices, parsed_map: ParsedMap) -> ParsedMap:
     return parsed_map
 
 
-def parse_old_format(wad, parsed_map: ParsedMap, game_type="DOOM") -> ParsedMap:
+def parse_old_format(wad, parsed_map: ParsedMap, game_type: str = "DOOM") -> ParsedMap:
 
     map_dict = wad._maps_lumps[parsed_map.map_name]
 
