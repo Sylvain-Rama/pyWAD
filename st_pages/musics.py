@@ -38,7 +38,7 @@ with col1:
 if st.session_state["music_path"] is not None:
     music_name, music_extension = os.path.splitext(st.session_state["music_path"])
 
-    if music_extension.endswith(".mid") & (os.name == "nt"):
+    if (music_extension == ".mid") & (os.name == "nt"):
         if st.session_state["player"] is None:
             try:
                 st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
@@ -64,7 +64,7 @@ if st.session_state["music_path"] is not None:
             if st.session_state["player"] is not None:
                 st.session_state["player"].stop()
 
-    elif music_extension in MUSIC_FORMATS.values():
+    elif music_extension in [".ogg", ".mp3"]:
         st.session_state["player"] = None
         with col2:
             st.audio(st.session_state["music_path"])
