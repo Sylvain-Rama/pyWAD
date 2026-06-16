@@ -17,6 +17,7 @@ jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
 kiwisolver==1.4.8
 loguru==0.7.3
+pyfluidsynth==1.4.0
 MarkupSafe==3.0.2
 matplotlib==3.10.1
 narwhals==1.35.0

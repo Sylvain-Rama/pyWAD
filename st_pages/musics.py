@@ -1,3 +1,4 @@
+import sys
 import streamlit as st
 from src.WADPlayer import MIDIPlayer
 from src.mus2mid import Mus2Mid, MUSIC_FORMATS
@@ -36,19 +37,22 @@ with col1:
 
 # Create the player if it's not created yet or if the music is changed
 if st.session_state["music_path"] is not None:
-    music_name, music_extension = os.path.splitext(st.session_state["music_path"])
+    music_name, music_extension = os.path.splitext(
+        st.session_state["music_path"])
 
-    if (music_extension == ".mid") & (os.name == "nt"):
+    if music_extension == ".mid" and sys.platform == "win32":
         if st.session_state["player"] is None:
             try:
-                st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
+                st.session_state["player"] = MIDIPlayer(
+                    st.session_state["music_path"])
             except Exception as e:
                 st.error(f"Error loading music: {e}.")
             st.session_state["current_music"] = chosen_music
 
         if st.session_state["current_music"] != chosen_music:
             st.session_state["player"].stop()
-            st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
+            st.session_state["player"] = MIDIPlayer(
+                st.session_state["music_path"])
             st.session_state["current_music"] = chosen_music
 
         with col2:
@@ -64,10 +68,20 @@ if st.session_state["music_path"] is not None:
             if st.session_state["player"] is not None:
                 st.session_state["player"].stop()
 
+    elif music_extension == ".mid" and sys.platform != "win32":
+        # On Linux/macOS: render MIDI → WAV with FluidSynth, play in browser
+        try:
+            player = MIDIPlayer(st.session_state["music_path"])
+            wav_path = player.to_wav()
+            st.session_state["player"] = player
+            st.audio(wav_path)
+        except Exception as e:
+            st.error(f"Error rendering MIDI: {e}")
+
     elif music_extension in [".ogg", ".mp3"]:
         st.session_state["player"] = None
         with col2:
             st.audio(st.session_state["music_path"])
 
     else:
-        st.error(f"This player works only for ogg, mp3 format and for midi format on Windows.")
+        st.error(f"Unsupported music format: {music_extension}")
