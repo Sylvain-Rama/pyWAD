@@ -15,6 +15,7 @@ col1, col2, col3, col4 = st.columns([2, 1, 1, 1], vertical_alignment="bottom")
 
 music_names = st.session_state["wad"].musics
 
+
 with col1:
     chosen_music = st.selectbox("Music", music_names)
 
@@ -36,19 +37,22 @@ with col1:
 
 # Create the player if it's not created yet or if the music is changed
 if st.session_state["music_path"] is not None:
-    music_name, music_extension = os.path.splitext(st.session_state["music_path"])
+    music_name, music_extension = os.path.splitext(
+        st.session_state["music_path"])
 
     if music_extension == ".mid" and sys.platform == "win32":
         if st.session_state["player"] is None:
             try:
-                st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
+                st.session_state["player"] = MIDIPlayer(
+                    st.session_state["music_path"])
             except Exception as e:
                 st.error(f"Error loading music: {e}.")
             st.session_state["current_music"] = chosen_music
 
         if st.session_state["current_music"] != chosen_music:
             st.session_state["player"].stop()
-            st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
+            st.session_state["player"] = MIDIPlayer(
+                st.session_state["music_path"])
             st.session_state["current_music"] = chosen_music
 
         with col2:
@@ -67,7 +71,12 @@ if st.session_state["music_path"] is not None:
     elif music_extension == ".mid" and sys.platform != "win32":
         # On Linux/macOS: render MIDI → WAV with FluidSynth, play in browser
         try:
+            with col3:
+                st.write("Rendering MUS to MIDI...")
             player = MIDIPlayer(st.session_state["music_path"])
+            with col3:
+                st.empty()
+                st.write("Rendering MIDI to WAV...")
             wav_path = player.to_wav()
             st.session_state["player"] = player
             with col2:
