@@ -17,6 +17,11 @@
       ]
     }
   },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libfluidsynth-dev cmake build-essential libglib2.0-dev libsndfile1-dev libasound2-dev libpulse-dev && wget -q https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.4.5.tar.gz -O /tmp/fluidsynth.tar.gz && tar -xf /tmp/fluidsynth.tar.gz -C /tmp && cmake -S /tmp/fluidsynth-2.4.5 -B /tmp/fluidsynth-build -DCMAKE_INSTALL_PREFIX=/workspaces/pyWAD/fluidsynth -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib && cmake --build /tmp/fluidsynth-build --target install -j$(nproc) && rm -rf /tmp/fluidsynth-2.4.5 /tmp/fluidsynth-build /tmp/fluidsynth.tar.gz && echo '✅ FluidSynth built and installed'",
+  "remoteEnv": {
+    "LD_LIBRARY_PATH": "/workspaces/pyWAD/fluidsynth/lib:${containerEnv:LD_LIBRARY_PATH}",
+    "PKG_CONFIG_PATH": "/workspaces/pyWAD/fluidsynth/lib/pkgconfig:${containerEnv:PKG_CONFIG_PATH}"
+  },
   "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
   "postAttachCommand": {
     "server": "streamlit run app.py --server.enableCORS false --server.enableXsrfProtection false"

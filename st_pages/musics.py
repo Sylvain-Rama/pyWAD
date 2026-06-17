@@ -5,7 +5,6 @@ from src.mus2mid import Mus2Mid, MUSIC_FORMATS
 import os
 from loguru import logger
 
-
 if "music_path" not in st.session_state:
     st.session_state["player"] = None
     st.session_state["music_path"] = None
@@ -37,22 +36,19 @@ with col1:
 
 # Create the player if it's not created yet or if the music is changed
 if st.session_state["music_path"] is not None:
-    music_name, music_extension = os.path.splitext(
-        st.session_state["music_path"])
+    music_name, music_extension = os.path.splitext(st.session_state["music_path"])
 
     if music_extension == ".mid" and sys.platform == "win32":
         if st.session_state["player"] is None:
             try:
-                st.session_state["player"] = MIDIPlayer(
-                    st.session_state["music_path"])
+                st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
             except Exception as e:
                 st.error(f"Error loading music: {e}.")
             st.session_state["current_music"] = chosen_music
 
         if st.session_state["current_music"] != chosen_music:
             st.session_state["player"].stop()
-            st.session_state["player"] = MIDIPlayer(
-                st.session_state["music_path"])
+            st.session_state["player"] = MIDIPlayer(st.session_state["music_path"])
             st.session_state["current_music"] = chosen_music
 
         with col2:
@@ -74,7 +70,8 @@ if st.session_state["music_path"] is not None:
             player = MIDIPlayer(st.session_state["music_path"])
             wav_path = player.to_wav()
             st.session_state["player"] = player
-            st.audio(wav_path)
+            with col2:
+                st.audio(wav_path)
         except Exception as e:
             st.error(f"Error rendering MIDI: {e}")
 

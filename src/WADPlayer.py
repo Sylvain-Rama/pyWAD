@@ -89,12 +89,14 @@ class MIDIPlayer:
         self.stop_flag = True
 
     def _init_fluidsynth(self, soundfont_path):
-        import os
         try:
             import fluidsynth as _fs
         except ImportError as exc:
             raise ImportError(
-                "pyfluidsynth is not installed. Run: pip install pyfluidsynth"
+                f"Failed to load FluidSynth: {exc}. "
+                "Ensure pyfluidsynth is installed ('pip install pyfluidsynth') "
+                "and the FluidSynth native library is available "
+                "('sudo apt-get install libfluidsynth-dev' on Debian/Ubuntu)."
             ) from exc
 
         if soundfont_path is None:
