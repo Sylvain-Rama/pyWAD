@@ -5,36 +5,19 @@ import threading
 from loguru import logger
 
 """
-Cross-platform MIDI player.
-- Windows: uses winmm.dll via ctypes (MCI interface).
-- Linux / other: uses FluidSynth (pyfluidsynth) to render MIDI to a WAV
-  file, which can then be served to a browser via st.audio().
+Windows MIDI player and Linux/macOS MIDI to WAV converter using FluidSynth.
+On Windows, this uses the winmm.dll library to play MIDI files directly.
+On Linux/macOS, this uses the pyfluidsynth library to render MIDI files to WAV format.
 
-Example usage (Windows real-time playback):
-    player = MIDIPlayer("path/to/your/file.mid")
-    player.play()
-    time.sleep(10)
-    player.stop()
-
-Example usage (Linux – render to WAV):
-    player = MIDIPlayer("path/to/your/file.mid", soundfont_path="media/gzdoom.sf2")
-    wav_path = player.to_wav("output/song.wav")
-
-Many thanks to https://github.com/KurtDing for the original Windows implementation.
+Many thanks to https://github.com/KurtDing for showing me a MIDI Windows implementation.
 """
 
 
-class MIDIPlayer:
-    def __init__(self, file_path, soundfont_path=None):
+class WinMIDIPlayer:
+    def __init__(self, file_path):
         self.file_path = file_path
         self.stop_flag = False
 
-        if sys.platform == "win32":
-            self._init_windows()
-        else:
-            self._init_fluidsynth(soundfont_path)
-
-    def _init_windows(self):
         import ctypes
         try:
             winmm = ctypes.WinDLL("winmm.dll")
@@ -66,9 +49,7 @@ class MIDIPlayer:
             self.stop_midi()
 
     def is_playing(self):
-        if sys.platform == "win32":
-            return self.mci_send("status midi mode") == "playing"
-        return False
+        return self.mci_send("status midi mode") == "playing"
 
     def stop_midi(self):
         logger.info("Stopping MIDI playback")
@@ -80,15 +61,20 @@ class MIDIPlayer:
         self.mci_send("reset midi")
 
     def play(self, loop_flag=False):
-        """Start playback in a background thread (Windows only)."""
+        """Start playback in a background thread."""
         self.loop_flag = loop_flag
         threading.Thread(target=self.play_midi, daemon=True).start()
 
     def stop(self):
-        """Stop playback (Windows only)."""
+        """Stop playback."""
         self.stop_flag = True
 
-    def _init_fluidsynth(self, soundfont_path):
+
+class MIDIWavConverter:
+    def __init__(self, file_path, soundfont_path="media/gzdoom.sf2"):
+        self.file_path = file_path
+        self.soundfont_path = soundfont_path
+
         try:
             import fluidsynth as _fs
         except ImportError as exc:
@@ -99,15 +85,9 @@ class MIDIPlayer:
                 "('sudo apt-get install libfluidsynth-dev' on Debian/Ubuntu)."
             ) from exc
 
-        if soundfont_path is None:
-            # Default to the bundled soundfont relative to this file's location
-            _here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            soundfont_path = os.path.join(_here, "media", "gzdoom.sf2")
-
         if not os.path.isfile(soundfont_path):
             raise FileNotFoundError(f"SoundFont not found: {soundfont_path}")
 
-        self._soundfont_path = soundfont_path
         self._fs = _fs
 
     def to_wav(self, output_path=None):
@@ -124,26 +104,20 @@ class MIDIPlayer:
             Absolute path to the rendered WAV file.
         """
 
-        if sys.platform == "win32":
-            raise NotImplementedError(
-                "to_wav() is only available on Linux/macOS.")
-
         if output_path is None:
             output_path = os.path.splitext(self.file_path)[0] + ".wav"
 
-        logger.info(f"Rendering MIDI → WAV: {self.file_path} → {output_path}")
+        logger.info(
+            f"Rendering MIDI file to WAV: {self.file_path} to {output_path}")
 
         fs = self._fs.Synth()
         fs.setting("audio.driver", "file")
         fs.setting("audio.file.name", output_path)
         fs.setting("audio.file.type", "wav")
         fs.setting("synth.lock-memory", 0)
-        fs.sfload(self._soundfont_path)
+        fs.sfload(self.soundfont_path)
         fs.midi2audio(self.file_path, output_path)
         fs.delete()
 
         logger.info(f"WAV written to: {output_path}")
         return output_path
-
-    def __repr__(self):
-        return f"MIDIPlayer(file_path={self.file_path!r}, stop_flag={self.stop_flag})"
