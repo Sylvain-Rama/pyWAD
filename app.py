@@ -1,3 +1,6 @@
+from app_utils import banner_html
+from WADViewer import WadViewer
+from WADParser import WAD_file
 import streamlit as st
 import os
 from loguru import logger
@@ -6,10 +9,6 @@ import matplotlib.pyplot as plt
 
 
 sys.path.append("src/")
-
-from WADParser import WAD_file
-from WADViewer import WadViewer
-from app_utils import banner_html
 
 
 def get_titlepic(viewer):
@@ -35,7 +34,8 @@ def init_app():
         st.session_state["title_pic"] = None
 
 
-st.set_page_config(page_title="WAD Viewer", page_icon="media/skull.png", layout="centered")
+st.set_page_config(page_title="WAD Viewer",
+                   page_icon="media/skull.png", layout="centered")
 st.components.v1.html(banner_html)
 
 
@@ -47,7 +47,8 @@ head_container = st.container(border=False, height=300)
 with head_container:
     head_col1, head_col2 = st.columns([1, 1])
 with head_col1:
-    uploaded_file = st.file_uploader("Choose a file", accept_multiple_files=False)
+    uploaded_file = st.file_uploader(
+        "Choose a file", accept_multiple_files=False)
 
 if uploaded_file is not None:
     if uploaded_file.name != st.session_state["wad_path"]:
@@ -55,7 +56,7 @@ if uploaded_file is not None:
         st.session_state["wad"] = wad
         st.session_state["wad_path"] = uploaded_file.name
         st.session_state["viewer"] = WadViewer(wad)
-        logger.debug("App: WAD file uploaded.")
+        logger.info("App: WAD file uploaded.")
         try:
             pic = get_titlepic(st.session_state["viewer"])
         except:
@@ -71,8 +72,10 @@ if uploaded_file is not None:
 
 if st.session_state["wad"] is None:
     st.write("Upload a WAD file to get started.")
-    st.write("You can download some WAD files from the [Doom Wiki](https://doomwiki.org/wiki/Category:Doom_II_WADs).")
-    st.write("The full version of the app is available on [Github](https://github.com/Sylvain-Rama/pyWAD).")
+    st.write(
+        "You can download some WAD files from the [Doom Wiki](https://doomwiki.org/wiki/Category:Doom_II_WADs).")
+    st.write(
+        "The full version of the app is available on [Github](https://github.com/Sylvain-Rama/pyWAD).")
 
 else:
     if st.session_state["title_pic"] is not None:
