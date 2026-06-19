@@ -1,13 +1,10 @@
-from WADParser import WAD_file
-from WADViewer import WadViewer
+from src.WADViewer import WadViewer
+from src.WADParser import WAD_file
 import matplotlib.pyplot as plt
 from loguru import logger
 import os
 import streamlit as st
 from app_utils import banner_html
-
-import sys
-sys.path.append("src/")
 
 
 def get_titlepic(viewer):

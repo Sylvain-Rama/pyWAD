@@ -1,6 +1,5 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
 from matplotlib.collections import LineCollection
 import numpy as np
 import argparse
@@ -9,8 +8,8 @@ import re
 
 from loguru import logger
 
-import WADParser
-from palettes import MAP_CMAPS
+from src.WADParser import WAD_file, open_wad_file
+from src.palettes import MAP_CMAPS
 
 """Main class to display WAD files.
 This class is used to display the content of a WAD file. It can display flats, textures, maps and sprites.
@@ -27,9 +26,10 @@ to get help on the command line arguments.
 
 
 class WadViewer:
-    def __init__(self, wad: WADParser.WAD_file):
-        if not isinstance(wad, WADParser.WAD_file):
-            raise TypeError(f"WadViewer expects a WAD_file object, got {type(wad)}.")
+    def __init__(self, wad: WAD_file):
+        if not isinstance(wad, WAD_file):
+            raise TypeError(
+                f"WadViewer expects a WAD_file object, got {type(wad)}.")
         self.wad = wad
 
     def get_flat_data(self, offset: int, size: int) -> np.ndarray:
@@ -46,7 +46,8 @@ class WadViewer:
         self.wad.bytes.seek(offset)
         flat = self.wad.bytes.read(size)
 
-        indices = np.array(struct.unpack(f"{size}B", flat), dtype=np.uint8).reshape(shape)
+        indices = np.array(struct.unpack(
+            f"{size}B", flat), dtype=np.uint8).reshape(shape)
         rgb_image = self.wad.palette[indices]
 
         return rgb_image
@@ -94,7 +95,8 @@ class WadViewer:
             attribs = ["block", "twosided", "special", "secret", "things"]
             attrib_dict = {}
             for a in attribs:
-                attrib_dict[a] = {k.split("__")[1]: v for k, v in kwargs.items() if k.startswith(f"{a}__")}
+                attrib_dict[a] = {
+                    k.split("__")[1]: v for k, v in kwargs.items() if k.startswith(f"{a}__")}
 
             return attrib_dict
 
@@ -112,7 +114,8 @@ class WadViewer:
             fig_width = min((width / 1000) * scale, max_width / dpi)
             wh_ratio = width / height
 
-            fig, ax = plt.subplots(figsize=(fig_width, fig_width / wh_ratio), dpi=dpi)
+            fig, ax = plt.subplots(
+                figsize=(fig_width, fig_width / wh_ratio), dpi=dpi)
 
             output_fig = True
 
@@ -129,7 +132,8 @@ class WadViewer:
         twosided_args = {"colors": twosided_color, "linewidths": linewidth_secondary, "capstyle": "round"} | supp_args[
             "twosided"
         ]
-        block_args = {"colors": block_color, "linewidths": linewidth_primary, "capstyle": "round"} | supp_args["block"]
+        block_args = {"colors": block_color, "linewidths": linewidth_primary,
+                      "capstyle": "round"} | supp_args["block"]
 
         ax.set_facecolor(bckgrd_color)
         if output_fig:
@@ -144,22 +148,26 @@ class WadViewer:
         # secial and secret lines are drawn on top of regular lines.
         if show_specials:
             special_color = [x / 255 for x in cmap["special"]]
-            special_args = {"colors": special_color, "linewidths": linewidth_primary} | supp_args["special"]
+            special_args = {"colors": special_color,
+                            "linewidths": linewidth_primary} | supp_args["special"]
             special_lines = LineCollection(map_data.special, **special_args)
             ax.add_collection(special_lines)
 
         if show_secrets:
             if map_data.secret is not None:
                 secret_color = [x / 255 for x in cmap["secret"]]
-                secret_args = {"colors": secret_color, "linewidths": linewidth_primary} | supp_args["secret"]
+                secret_args = {"colors": secret_color,
+                               "linewidths": linewidth_primary} | supp_args["secret"]
                 secret_lines = LineCollection(map_data.secret, **secret_args)
                 ax.add_collection(secret_lines)
 
         if show_things:
             things_color = [x / 255 for x in cmap["things"]]
             things_dict = map_data.things
-            things_args = {"color": things_color, "s": things_size, "marker": "+"} | supp_args["things"]
-            ax.scatter(things_dict["all_things"]["x"], things_dict["all_things"]["y"], **things_args)
+            things_args = {"color": things_color, "s": things_size,
+                           "marker": "+"} | supp_args["things"]
+            ax.scatter(things_dict["all_things"]["x"],
+                       things_dict["all_things"]["y"], **things_args)
 
         ax.axis("equal")
         ax.axis("off")
@@ -194,7 +202,8 @@ class WadViewer:
 
             # We want to paste the new texture only where its transparency is > 0
             original[y_start:y_end, x_start:x_end] = np.where(
-                alpha[paste_y_start:paste_y_end, paste_x_start:paste_x_end] > 0,
+                alpha[paste_y_start:paste_y_end,
+                      paste_x_start:paste_x_end] > 0,
                 paste[paste_y_start:paste_y_end, paste_x_start:paste_x_end],
                 original[y_start:y_end, x_start:x_end],
             )
@@ -210,7 +219,8 @@ class WadViewer:
         for patch_name, x, y in texture_data["patches"]:
 
             if patch_name not in self.wad.lump_names:
-                logger.warning(f"Unknown patch '{patch_name}' in texture '{tex_name}'.")
+                logger.warning(
+                    f"Unknown patch '{patch_name}' in texture '{tex_name}'.")
                 continue
 
             idx = self.wad.lump_names.index(patch_name)
@@ -255,9 +265,11 @@ class WadViewer:
 
         self.wad.bytes.seek(offset)
 
-        width, height, left_offset, top_offset = struct.unpack("<2H2h", self.wad.bytes.read(8))
+        width, height, left_offset, top_offset = struct.unpack(
+            "<2H2h", self.wad.bytes.read(8))
 
-        column_offsets = [struct.unpack("<I", self.wad.bytes.read(4))[0] for _ in range(width)]
+        column_offsets = [struct.unpack("<I", self.wad.bytes.read(4))[
+            0] for _ in range(width)]
 
         image_data = np.zeros((width, height), dtype=np.uint8)
         image_alpha = np.zeros((width, height), dtype=np.uint8)
@@ -268,7 +280,8 @@ class WadViewer:
             self.wad.bytes.seek(inner_offset)  # Move to column start
 
             while True:
-                row_start = struct.unpack("<B", self.wad.bytes.read(1))[0]  # Read row start
+                row_start = struct.unpack("<B", self.wad.bytes.read(1))[
+                    0]  # Read row start
                 if row_start == 0xFF:
                     break  # End of column
 
@@ -278,8 +291,8 @@ class WadViewer:
                 pixels = list(self.wad.bytes.read(pixel_count))
                 _ = self.wad.bytes.read(1)  # Skip column termination byte
 
-                image_data[i, row_start : row_start + pixel_count] = pixels
-                image_alpha[i, row_start : row_start + pixel_count] = 1
+                image_data[i, row_start: row_start + pixel_count] = pixels
+                image_alpha[i, row_start: row_start + pixel_count] = 1
 
         return image_data, image_alpha, left_offset, top_offset
 
@@ -311,15 +324,21 @@ class WadViewer:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--wad", "-w", type=str, help="Path to WAD file", default="WADs/DOOM.WAD")
-    parser.add_argument("--map", "-m", type=str, help="Map name pattern to draw, e.g. E1M1 / E1M. / .", default="E1M1")
-    parser.add_argument("--palette", "-p", type=str, help="Palette name", default="OMGIFOL")
-    parser.add_argument("--format", "-f", type=str, help="Output format", default="png", choices=["png", "svg"])
-    parser.add_argument("--scale", "-s", type=float, help="Scale of the map", default=2.0)
-    parser.add_argument("--max_width", "-mw", type=int, help="Max width (px) of the map", default=4096)
+    parser.add_argument("--wad", "-w", type=str,
+                        help="Path to WAD file", default="WADs/DOOM.WAD")
+    parser.add_argument("--map", "-m", type=str,
+                        help="Map name pattern to draw, e.g. E1M1 / E1M. / .", default="E1M1")
+    parser.add_argument("--palette", "-p", type=str,
+                        help="Palette name", default="OMGIFOL")
+    parser.add_argument("--format", "-f", type=str,
+                        help="Output format", default="png", choices=["png", "svg"])
+    parser.add_argument("--scale", "-s", type=float,
+                        help="Scale of the map", default=2.0)
+    parser.add_argument("--max_width", "-mw", type=int,
+                        help="Max width (px) of the map", default=4096)
 
     args = parser.parse_args()
-    wad = WADParser.open_wad_file(args.wad)
+    wad = open_wad_file(args.wad)
     viewer = WadViewer(wad)
 
     maps_to_draw = [x for x in wad.maps.keys() if re.match(args.map, x)]
@@ -327,5 +346,7 @@ if __name__ == "__main__":
         raise ValueError(f"Invalid map pattern: {args.map}")
 
     for map_name in maps_to_draw:
-        fig = viewer.draw_map(map_name, palette=args.palette, scale=args.scale, max_width=args.max_width)
-        fig.savefig(f"output/{args.wad.split('/')[-1]}_{map_name}.{args.format}", bbox_inches="tight", dpi=150)
+        fig = viewer.draw_map(map_name, palette=args.palette,
+                              scale=args.scale, max_width=args.max_width)
+        fig.savefig(
+            f"output/{args.wad.split('/')[-1]}_{map_name}.{args.format}", bbox_inches="tight", dpi=150)
