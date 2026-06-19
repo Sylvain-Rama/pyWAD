@@ -1,13 +1,12 @@
-from app_utils import banner_html
-from WADViewer import WadViewer
 from WADParser import WAD_file
-import streamlit as st
-import os
-from loguru import logger
-import sys
+from WADViewer import WadViewer
 import matplotlib.pyplot as plt
+from loguru import logger
+import os
+import streamlit as st
+from app_utils import banner_html
 
-
+import sys
 sys.path.append("src/")
 
 
@@ -52,6 +51,7 @@ with head_col1:
 
 if uploaded_file is not None:
     if uploaded_file.name != st.session_state["wad_path"]:
+
         wad = WAD_file(uploaded_file)
         st.session_state["wad"] = wad
         st.session_state["wad_path"] = uploaded_file.name
