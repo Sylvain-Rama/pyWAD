@@ -1,14 +1,9 @@
-import streamlit as st
-import os
-from loguru import logger
-import sys
+from src.WADViewer import WadViewer
+from src.WADParser import WAD_file
 import matplotlib.pyplot as plt
-
-
-sys.path.append("src/")
-
-from WADParser import WAD_file
-from WADViewer import WadViewer
+from loguru import logger
+import os
+import streamlit as st
 from app_utils import banner_html
 
 
@@ -35,44 +30,52 @@ def init_app():
         st.session_state["title_pic"] = None
 
 
-st.set_page_config(page_title="WAD Viewer", page_icon="media/skull.png", layout="centered")
+st.set_page_config(page_title="WAD Viewer",
+                   page_icon="media/skull.png", layout="centered")
 st.components.v1.html(banner_html)
 
 
 init_app()
-st.header("WAD Viewer")
 
+st.header("DOOM WAD Viewer")
+st.text("A simple WAD file viewer for DOOM, DOOM II and other games using the same engine.")
+st.text("Will read and display the contents of a WAD file, including maps, textures, sprites, sounds and musics.")
 
-head_container = st.container(border=False, height=300)
+head_container = st.container(border=False)
 with head_container:
     head_col1, head_col2 = st.columns([1, 1])
 with head_col1:
-    uploaded_file = st.file_uploader("Choose a file", accept_multiple_files=False)
+    uploaded_file = st.file_uploader(
+        "Upload a WAD file to get started.", accept_multiple_files=False)
 
 if uploaded_file is not None:
     if uploaded_file.name != st.session_state["wad_path"]:
+
         wad = WAD_file(uploaded_file)
         st.session_state["wad"] = wad
         st.session_state["wad_path"] = uploaded_file.name
         st.session_state["viewer"] = WadViewer(wad)
-        logger.debug("App: WAD file uploaded.")
+        logger.info("App: WAD file uploaded.")
         try:
             pic = get_titlepic(st.session_state["viewer"])
         except:
             pic = None
         st.session_state["title_pic"] = pic
-        # st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
 
         # Cleaning the output folder.
         for f in os.listdir("output"):
             if f != ".gitkeep":
                 os.remove(os.path.join("output", f))
 
-
 if st.session_state["wad"] is None:
-    st.write("Upload a WAD file to get started.")
-    st.write("You can download some WAD files from the [Doom Wiki](https://doomwiki.org/wiki/Category:Doom_II_WADs).")
-    st.write("The full version of the app is available on [Github](https://github.com/Sylvain-Rama/pyWAD).")
+    for col in st.columns(5):
+        col.image("media/caco.png", use_container_width=True,
+                  output_format="PNG")
+
+    st.write(
+        "You can download some WAD files from the [Doom Wiki](https://doomwiki.org/wiki/Category:Doom_II_WADs).")
+    st.write(
+        "The full version of the app is available on [Github](https://github.com/Sylvain-Rama/pyWAD).")
 
 else:
     if st.session_state["title_pic"] is not None:

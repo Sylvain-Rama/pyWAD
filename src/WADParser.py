@@ -1,8 +1,10 @@
+from src.map_parser import parse_map
+from src.mus2mid import MUSIC_FORMATS
+from src.palettes import DEFAULT_PALETTE
+from src.parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_LUMPS, TEX_REGEX
 import os
 import csv
 import struct
-import sys
-from collections import defaultdict
 from loguru import logger
 import numpy as np
 import wave
@@ -12,12 +14,6 @@ https://doomwiki.org/wiki/WAD
 https://www.gamers.org/dhs/helpdocs/dmsp1666.html
 
 """
-
-sys.path.append("src/")
-from parser_utils import EXMY_REGEX, MAPXY_REGEX, MAPS_LUMPS, TEX_REGEX
-from palettes import DEFAULT_PALETTE
-from mus2mid import MUSIC_FORMATS
-from map_parser import parse_map
 
 
 class WAD_file:
@@ -62,7 +58,8 @@ class WAD_file:
 
     def _get_directory(self, bytestring: bytes):
         """Get the directory of the WAD file."""
-        wad_type, dir_size, dir_offset = struct.unpack("<4sII", bytestring.read(12))
+        wad_type, dir_size, dir_offset = struct.unpack(
+            "<4sII", bytestring.read(12))
         wad_type = wad_type.decode("ascii")
         if wad_type in ["IWAD", "PWAD"]:
             self.dir_size = dir_size
@@ -96,7 +93,8 @@ class WAD_file:
 
     def _parse_lumps(self) -> tuple[dict, dict]:
         lump_names = [x[0] for x in self.lumps]
-        maps_names = [x for x in lump_names if (bool(EXMY_REGEX.match(x)) | bool(MAPXY_REGEX.match(x)))]
+        maps_names = [x for x in lump_names if (
+            bool(EXMY_REGEX.match(x)) | bool(MAPXY_REGEX.match(x)))]
 
         maps = {}
         misc = {}
@@ -119,10 +117,8 @@ class WAD_file:
                 else:
                     misc[name] = (offset, size)
         if len(duplicates) > 0:
-            logger.warning(f"Found {len(duplicates)} duplicated lumps in this WAD.")
-
-        # maps = None if len(maps) == 0 else maps
-        # misc = None if len(misc) == 0 else misc
+            logger.warning(
+                f"Found {len(duplicates)} duplicated lumps in this WAD.")
 
         return maps, misc
 
@@ -140,14 +136,16 @@ class WAD_file:
 
     def _get_palette(self) -> np.ndarray:
         if "PLAYPAL" not in self.lump_names:
-            logger.info(f"No palette in this {self.wad_type}, loading the default one.")
+            logger.info(
+                f"No palette in this {self.wad_type}, loading the default one.")
             pal_b = DEFAULT_PALETTE
         else:
             pal_b = self._lump_data_by_name("PLAYPAL")[:768]
 
         # 14 Palettes are packed all together by [R, G, B, R...] values.
         # The first one is thus 768 bytes long.
-        pal_rgb = np.array(struct.unpack("768B", pal_b), dtype=np.uint8).reshape((256, 3))
+        pal_rgb = np.array(struct.unpack("768B", pal_b),
+                           dtype=np.uint8).reshape((256, 3))
 
         # We will output in RGBA format, so adding an alpha channel with full opacity (255)
         pal_rgba = np.hstack((pal_rgb, np.ones((256, 1)) * 255))
@@ -170,7 +168,7 @@ class WAD_file:
 
     def _parse_by_markers(
         self, sequence_name: str = "FLATS", m_start: str = "F_START", m_end: str = "F_END"
-    ) -> dict[str : tuple[int, int]]:
+    ) -> dict[str: tuple[int, int]]:
 
         if (m_start in self.lump_names) & (m_end in self.lump_names):
             start_idx = self.lump_names.index(m_start)
@@ -183,7 +181,7 @@ class WAD_file:
         if end_idx < start_idx:
             start_idx, end_idx = end_idx, start_idx
 
-        sel_lumps = self.lumps[start_idx : end_idx + 1]
+        sel_lumps = self.lumps[start_idx: end_idx + 1]
 
         res_set = set()
         for name, offset, size in sel_lumps:
@@ -192,10 +190,12 @@ class WAD_file:
                 # But because of this folder structure, in theory 2 different lumps could have the same name.
                 # Adding a warning just in case.
                 if name in res_set:
-                    logger.warning(f"{sequence_name} {name} is present multiple times in the lumps structure.")
+                    logger.warning(
+                        f"{sequence_name} {name} is present multiple times in the lumps structure.")
                 res_set.add(name)
 
-        logger.info(f"Found {len(res_set)} {sequence_name} between {m_start} and {m_end} in this WAD.")
+        logger.info(
+            f"Found {len(res_set)} {sequence_name} between {m_start} and {m_end} in this WAD.")
         return list(res_set)
 
     def _get_spritesheets(self) -> list[tuple[str, int, int]]:
@@ -204,7 +204,8 @@ class WAD_file:
 
         sprite_dict = {}
         for sprite_name in sprite_names:
-            sprite_dict[sprite_name] = sorted([x for x in self.sprites if x.startswith(sprite_name)])
+            sprite_dict[sprite_name] = sorted(
+                [x for x in self.sprites if x.startswith(sprite_name)])
 
         logger.info(f"Created {len(sprite_dict)} spritesheets.")
 
@@ -216,7 +217,8 @@ class WAD_file:
         n_patches = int.from_bytes(lump[0:4], byteorder="little")
         patches = []
         for i in range(n_patches):
-            patch_name = lump[4 + i * 8 : 4 + (i + 1) * 8].decode("ascii").rstrip("\0")
+            patch_name = lump[4 + i * 8: 4 +
+                              (i + 1) * 8].decode("ascii").rstrip("\0")
             patches.append(patch_name)
         return patches
 
@@ -241,10 +243,13 @@ class WAD_file:
             self.bytes.seek(lump_offset + tx_offset)
             texture_name = self.bytes.read(8).decode("ascii").rstrip("\0")
 
-            mask, width, height, col_dir = struct.unpack("<ihhi", self.bytes.read(12))
+            mask, width, height, col_dir = struct.unpack(
+                "<ihhi", self.bytes.read(12))
 
-            patch_count = int.from_bytes(self.bytes.read(2), byteorder="little")
-            map_patches = np.array([struct.unpack("<hhhhh", self.bytes.read(10)) for i in range(patch_count)])
+            patch_count = int.from_bytes(
+                self.bytes.read(2), byteorder="little")
+            map_patches = np.array(
+                [struct.unpack("<hhhhh", self.bytes.read(10)) for i in range(patch_count)])
 
             orig_x = map_patches[:, 0]
             orig_y = map_patches[:, 1]
@@ -253,11 +258,13 @@ class WAD_file:
             patch_infos = [
                 (patches[patch_idxs[i]], int(orig_x[i]), int(orig_y[i]))
                 for i in range(patch_count)
-                if patches[patch_idxs[i]] in self.lump_names  # Only include patches that exist in the WAD
+                # Only include patches that exist in the WAD
+                if patches[patch_idxs[i]] in self.lump_names
             ]
             # Some PWADs have textures that reference patches not present in the WAD. Skip them.
             if len(patch_infos) > 0:
-                textures[texture_name] = {"width": width, "height": height, "patches": patch_infos}
+                textures[texture_name] = {
+                    "width": width, "height": height, "patches": patch_infos}
 
         return textures
 
@@ -276,11 +283,13 @@ class WAD_file:
             texs = self._parse_textures(tex_name, patches)
             textures.update(texs)
 
-        logger.info(f"Found {len(textures)} textures in {len(tex_lumps)} texture lumps.")
+        logger.info(
+            f"Found {len(textures)} textures in {len(tex_lumps)} texture lumps.")
         return textures
 
     def _gather_musics(self) -> list[str]:
-        music_lumps = [lump for lump in self.lump_names if (lump.startswith("D_") | lump.startswith("MUS_"))]
+        music_lumps = [lump for lump in self.lump_names if (
+            lump.startswith("D_") | lump.startswith("MUS_"))]
 
         if len(music_lumps) == 0:
             logger.info(f"No music found in this {self.wad_type}.")
@@ -292,7 +301,8 @@ class WAD_file:
 
     def export_music(self, music_name: str) -> str:
         if music_name not in self.lump_names:
-            raise ValueError(f"Music {music_name} not found in this {self.wad_type}.")
+            raise ValueError(
+                f"Music {music_name} not found in this {self.wad_type}.")
 
         offset, size = self._misc_lumps[music_name]
 
@@ -311,19 +321,23 @@ class WAD_file:
         return output_path
 
     def _gather_sounds(self):
+        # We keep only the sound lumps starting with "DS" in their names,
+        # to ignore the sounds made for motherboard buzzer starting with "DP".
+        # Let's be honest: nostalgia aside, they were pretty bad.
         sounds = [x for x in self.lump_names if x.startswith("DS")]
         logger.info(f"Found {len(sounds)} sounds in this WAD.")
         return sounds if sounds else None
 
     def export_sound(self, sound_name: str) -> str:
         if sound_name not in self._misc_lumps.keys():
-            raise ValueError(f"Sound {sound_name} not found in this {self.wad_type}.")
+            raise ValueError(
+                f"Sound {sound_name} not found in this {self.wad_type}.")
 
         lump_data = self._lump_data_by_name(sound_name)
         sample_rate = struct.unpack_from("<H", lump_data, 2)[0]
         sample_count = struct.unpack_from("<I", lump_data, 4)[0]
 
-        samples = lump_data[8 : 8 + sample_count]  # removing the padding.
+        samples = lump_data[8: 8 + sample_count]  # removing the padding.
         output_path = f"output/{sound_name}.wav"
         with wave.open(output_path, "wb") as wav_file:
             wav_file.setnchannels(1)

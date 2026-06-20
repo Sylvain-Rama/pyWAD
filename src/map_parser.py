@@ -5,6 +5,8 @@ from loguru import logger
 from typing import Union
 from dataclasses import dataclass
 
+"""Utility functions to parse map lumps from a WAD file. Can parse both old Doom format and UDMF format maps."""
+
 
 @dataclass
 class ParsedMap:
@@ -31,9 +33,11 @@ def filter_flags_by_bit(flags: np.array, bit_position: int, value=1) -> np.array
 
 def get_map_dims(vertices: np.array, parsed_map: ParsedMap) -> ParsedMap:
 
-    map_lims = (vertices[:, 0].min(), vertices[:, 0].max(), vertices[:, 1].min(), vertices[:, 1].max())
+    map_lims = (vertices[:, 0].min(), vertices[:, 0].max(),
+                vertices[:, 1].min(), vertices[:, 1].max())
     parsed_map.map_lims = map_lims
-    parsed_map.map_dims = (map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
+    parsed_map.map_dims = (
+        map_lims[1] - map_lims[0], map_lims[3] - map_lims[2])
 
     return parsed_map
 
@@ -43,24 +47,29 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type: str = "DOOM") -> Par
     map_dict = wad._maps_lumps[parsed_map.map_name]
 
     lump = wad._lump_data(*map_dict["VERTEXES"])
-    vertices = np.array([struct.unpack("<hh", lump[i : i + 4]) for i in range(0, len(lump), 4)])
+    vertices = np.array([struct.unpack("<hh", lump[i: i + 4])
+                        for i in range(0, len(lump), 4)])
 
     parsed_map = get_map_dims(vertices, parsed_map)
 
     lump = wad._lump_data(*map_dict["LINEDEFS"])
 
     if game_type in ["DOOM", "HERETIC"]:
-        linedefs = np.array([struct.unpack("<HHHHHHH", lump[i : i + 14]) for i in range(0, len(lump), 14)])
+        linedefs = np.array([struct.unpack("<HHHHHHH", lump[i: i + 14])
+                            for i in range(0, len(lump), 14)])
         lump = wad._lump_data(*map_dict["THINGS"])
-        things = np.array([struct.unpack("<hhhhh", lump[i : i + 10]) for i in range(0, len(lump), 10)])
+        things = np.array([struct.unpack("<hhhhh", lump[i: i + 10])
+                          for i in range(0, len(lump), 10)])
         th_x = things[:, 0]
         th_y = things[:, 1]
         th_type = things[:, 3]
 
     elif game_type in ["HEXEN"]:
-        linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i : i + 16]) for i in range(0, len(lump), 16)])
+        linedefs = np.array([struct.unpack("<HHHBBBBBBHH", lump[i: i + 16])
+                            for i in range(0, len(lump), 16)])
         lump = wad._lump_data(*map_dict["THINGS"])
-        things = np.array([struct.unpack(f"<{7}h{6}B", lump[i : i + 20]) for i in range(0, len(lump), 20)])
+        things = np.array(
+            [struct.unpack(f"<{7}h{6}B", lump[i: i + 20]) for i in range(0, len(lump), 20)])
         th_x = things[:, 1]
         th_y = things[:, 2]
         th_type = things[:, 0]
@@ -68,7 +77,8 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type: str = "DOOM") -> Par
     else:
         logger.error("Unable to parse map linedefs and/or things.")
         return None
-    linecoords = [[int(k), int(v)] for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
+    linecoords = [[int(k), int(v)]
+                  for k, v in zip(linedefs[:, 0], linedefs[:, 1])]
 
     lines = vertices[linecoords]
     flags = linedefs[:, 2]
@@ -77,7 +87,8 @@ def parse_old_format(wad, parsed_map: ParsedMap, game_type: str = "DOOM") -> Par
     # Some WADs don't have all their linedefs flags properly set.
     # We consider every lines that are not two-sided as blocking
     parsed_map.block = lines[filter_flags_by_bit(flags, 2, value=0)]
-    parsed_map.twosided = lines[filter_flags_by_bit(flags, 2, value=1)]  # Two-sided
+    parsed_map.twosided = lines[filter_flags_by_bit(
+        flags, 2, value=1)]  # Two-sided
     parsed_map.special = lines[np.where(specials != 0)[0]]  # specials
     parsed_map.secret = lines[filter_flags_by_bit(flags, 5)]  # Secrets
 
