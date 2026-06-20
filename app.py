@@ -36,15 +36,17 @@ st.components.v1.html(banner_html)
 
 
 init_app()
-st.header("WAD Viewer")
 
+st.header("DOOM WAD Viewer")
+st.text("A simple WAD file viewer for DOOM, DOOM II and other games using the same engine.")
+st.text("Will read and display the contents of a WAD file, including maps, textures, sprites, sounds and musics.")
 
-head_container = st.container(border=False, height=300)
+head_container = st.container(border=False)
 with head_container:
     head_col1, head_col2 = st.columns([1, 1])
 with head_col1:
     uploaded_file = st.file_uploader(
-        "Choose a file", accept_multiple_files=False)
+        "Upload a WAD file to get started.", accept_multiple_files=False)
 
 if uploaded_file is not None:
     if uploaded_file.name != st.session_state["wad_path"]:
@@ -59,16 +61,17 @@ if uploaded_file is not None:
         except:
             pic = None
         st.session_state["title_pic"] = pic
-        # st.session_state["title_pic"] = get_titlepic(st.session_state["viewer"])
 
         # Cleaning the output folder.
         for f in os.listdir("output"):
             if f != ".gitkeep":
                 os.remove(os.path.join("output", f))
 
-
 if st.session_state["wad"] is None:
-    st.write("Upload a WAD file to get started.")
+    for col in st.columns(5):
+        col.image("media/caco.png", use_container_width=True,
+                  output_format="PNG")
+
     st.write(
         "You can download some WAD files from the [Doom Wiki](https://doomwiki.org/wiki/Category:Doom_II_WADs).")
     st.write(
