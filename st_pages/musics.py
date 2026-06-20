@@ -39,7 +39,8 @@ if st.session_state["music_path"] is not None:
     music_name, music_extension = os.path.splitext(
         st.session_state["music_path"])
 
-
+# On Windows, use the WinMIDIPlayer class to play MIDI files
+# However we have to manage buttons ourself.
 if music_extension == ".mid" and sys.platform == "win32":
     if st.session_state["player"] is None:
         try:

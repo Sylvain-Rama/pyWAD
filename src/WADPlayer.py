@@ -13,7 +13,7 @@ Many thanks to https://github.com/KurtDing for showing me a MIDI Windows impleme
 
 
 class WinMIDIPlayer:
-    def __init__(self, file_path):
+    def __init__(self, file_path: str):
         self.file_path = file_path
         self.stop_flag = False
 
@@ -26,7 +26,7 @@ class WinMIDIPlayer:
             raise ImportError(
                 "winmm.dll not found. Windows playback unavailable.") from exc
 
-    def mci_send(self, command):
+    def mci_send(self, command: str) -> str:
         buffer = self._ctypes.create_unicode_buffer(256)
         self._mciSendString(command, buffer, 256, 0)
         return buffer.value
@@ -70,7 +70,7 @@ class WinMIDIPlayer:
 
 
 class MIDIWavConverter:
-    def __init__(self, file_path, soundfont_path="media/gzdoom.sf2"):
+    def __init__(self, file_path: str, soundfont_path: str = "media/gzdoom.sf2"):
         self.file_path = file_path
         self.soundfont_path = soundfont_path
 
@@ -89,7 +89,7 @@ class MIDIWavConverter:
 
         self._fs = _fs
 
-    def to_wav(self, output_path=None):
+    def to_wav(self, output_path: str | None = None) -> str:
         """Render the MIDI file to a WAV file using FluidSynth.
 
         Parameters

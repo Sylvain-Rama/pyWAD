@@ -120,9 +120,6 @@ class WAD_file:
             logger.warning(
                 f"Found {len(duplicates)} duplicated lumps in this WAD.")
 
-        # maps = None if len(maps) == 0 else maps
-        # misc = None if len(misc) == 0 else misc
-
         return maps, misc
 
     def _lump_data(self, offset: int, size: int) -> bytes:
@@ -324,6 +321,9 @@ class WAD_file:
         return output_path
 
     def _gather_sounds(self):
+        # We keep only the sound lumps starting with "DS" in their names,
+        # to ignore the sounds made for motherboard buzzer starting with "DP".
+        # Let's be honest: nostalgia aside, they were pretty bad.
         sounds = [x for x in self.lump_names if x.startswith("DS")]
         logger.info(f"Found {len(sounds)} sounds in this WAD.")
         return sounds if sounds else None
